@@ -11,7 +11,7 @@
     :project: I2P Crawler
     :since: 0.0.1
 """
-from pony.orm import select, count
+from pony.orm import select, count, db_session
 from pony.orm import desc
 from datetime import datetime
 from datetime import timedelta
@@ -102,6 +102,7 @@ def get_site(s_url):
     return entities.Site.get(name=s_url)
 
 
+@db_session  # Abre una sesión de base de datos para esta función
 def get_site_by_id(s_id):
     """
     Gets the site by its ID
@@ -112,7 +113,7 @@ def get_site_by_id(s_id):
     # Gets the site by url
     return entities.Site.get(id=s_id)
 
-
+@db_session  # Abre una sesión de base de datos para esta función
 def get_sites():
     """
     Gets all sites
@@ -291,6 +292,7 @@ def delete_statistics(s_url):
 
 
 # NODE LINKS - CRUD (Create Read Update Delete)
+@db_session
 def get_links():
     """
     Gets all links among sites
@@ -330,7 +332,7 @@ def create_link(src_url, dst_url):
 
     return link
 
-
+@db_session
 def get_incoming_links(ts_url):
     """
     Gets all incoming links to a destination site
@@ -342,7 +344,7 @@ def get_incoming_links(ts_url):
         link for link in entities.Link for dst_site in link.dst_site if dst_site.name == ts_url)[:]
     return incoming
 
-
+@db_session 	
 def get_incoming_links_by_site_id(ts_id):
     """
     Gets all incoming links to a destination site

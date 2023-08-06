@@ -19,13 +19,13 @@ PROVIDER = 'mysql'
 HOST = 'localhost'
 
 #DB username
-USERNAME = 'i2p'
+USERNAME = 'phpmyadmin'
 
 #DB password
-PASSWORD = 'password'
+PASSWORD = 'Juanmitigre99!'
 
 #DB name
-DATABASE = 'i2p_database'
+DATABASE = 'freenet_database'
 
 #Proxy configuration (host:port or None)
 # I2P = 127.0.0.1:4444
