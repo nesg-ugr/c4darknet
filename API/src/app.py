@@ -1,11 +1,17 @@
+import base64
 import os
+import io
 import sys
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response, render_template
+import numpy as np
 from config import config
+import pandas as pd
 
 from pony.orm import db_session
 
 from urllib.parse import unquote
+from sqlalchemy import create_engine
+import matplotlib.pyplot as plt
 
 
 # Obtenemos la ruta absoluta del directorio que contiene el archivo app.py
@@ -21,14 +27,536 @@ api_directory = os.path.join(current_directory, '..')
 sys.path.append(crawler_directory)
 sys.path.append(api_directory)
 
+
+from pony.flask import db_session
 import database.dbutils as dbutils # Importamos todo el módulo dbutils.py
 import models.sites as sites# Importa el módulo sites desde la carpeta models
+
+#--------------------------------------------------------------------------------------------------------------
+
+# Parametros de configuracion para los graficos
+# fondict for axis labels
+font_labels = {'family' : 'arial',
+        'weight' : 'normal',
+        'size'   : 26}
+# fondict for title labels
+font_title = {'family' : 'arial',
+        'weight' : 'bold',
+        'size'   : 24}
+# fontsize for tickso
+ticks_fontsize=20
+
+# legend fontsize
+legend_fontsize=15
+
+# Linewidth and markersize
+lw=5
+ms=10
+
+#-----------------------------GLOBALES----------------------------------------------
+
+logprocessing_limit = 1000000
+engine = create_engine('mysql+pymysql://phpmyadmin:Juanmitigre99!@localhost:'+'3306'+'/freenet_database', echo=False)
+df_site = pd.read_sql_query('select * from site', engine)
+df_status = pd.read_sql_query('select * from sitestatus', engine)
+df_source = pd.read_sql_query('select * from sitesource', engine)
+df_logprocessing = pd.read_sql_query('select * from siteprocessinglog limit ' + str(logprocessing_limit), engine)
+df_language = pd.read_sql_query('select sitelanguage.* from sitelanguage', engine)
+df_sitehomeinfo = pd.read_sql_query('select sitehomeinfo.* from sitehomeinfo', engine)
+df_connectivity = pd.read_sql_query('select siteconnectivitysummary.* from siteconnectivitysummary', engine)
+df_src_link = pd.read_sql_query('select link_site.* from link_site', engine)
+df_dst_link = pd.read_sql_query('select link_site_2.* from link_site_2', engine)
+
+# visualizacion al maximo el tamaño de las columnas
+pd.set_option('display.max_colwidth', None)
+
+# Agregamos el dato de la duracion, en minutos, que seria la diferencia entre la fecha de inicio y la de fin
+df_site['duration'] = (df_site['timestamp_s'] - df_site['timestamp']).apply(lambda x:x.total_seconds()/60)
+
+#Agregamos una abreviatura para los sitios de freenet
+df_site['abbr'] = df_site['name']
+for i in range(0, len(df_site.index)):
+    name = df_site['abbr'][i]
+    
+    #Comprobamos si acaba en barra
+    if name[-1] == "/":
+        name = name[:-1]
+    #Comprobamos si es USK o SSK
+    is_usk = False
+    if "USK@" in name:
+        is_usk = True
+    
+    #Seleccionamos lo de despues del arroba
+    name = name.split("@", 1)[1]
+
+    if is_usk:
+        name = name.rsplit("/", 1)[0]
+        name = name.split("/", 1)[1]
+    else:
+        if "/" in name:
+            name = name.split("/", 1)[1]
+        
+    #df_site['abbr'][i] = name
+    df_site.at[i, 'abbr'] = name
+
+# Agregamos la informacion del estado del sitio
+df_site_status = df_site.merge(df_status,left_on='current_status',right_on='id')
+df_site_status = df_site_status.drop(labels=['type_x','id_y','description','current_status'],axis=1)
+df_site_status=df_site_status.rename(columns={'type_y':'status'})
+
+# Agregamos la infromacion de la fuente del sitio
+df_site_source = df_site.merge(df_source,left_on='source',right_on='id')
+df_site_source = df_site_source.drop(labels=['type_x','id_y','description','source'],axis=1)
+df_site_source=df_site_source.rename(columns={'type_y':'source'})
+
+# Unimos ambas informaciones en un mismo lugar
+df_site_source_status = df_site_source.merge(df_status,left_on='current_status',right_on='id')
+df_site_source_status = df_site_source_status.drop(labels=['id','current_status','description'],axis=1)
+df_site_source_status = df_site_source_status.rename(columns={'type':'current_status', 'id_x':'id'})
+
+#Unimos la informacion del sitio con las de la conectividad
+df_site_conn = df_site_source_status.merge(df_connectivity,left_on='id',right_on='site')
+df_site_conn = df_site_conn.drop(labels=['id_x','id_y','pages_x'],axis=1)
+df_site_conn = df_site_conn.rename(columns={'pages_y':'pages'})
+
+#Unimos la conectividad de los nodos para los grafos
+df_links = df_src_link.merge(df_dst_link,left_on='link',right_on='link')
+df_links = df_links.rename(columns={'site_x':'Source','site_y':'Target','link':'Label'})
+
+#Unimos los site con la info de home
+df_site_home = df_site.merge(df_sitehomeinfo,left_on='id',right_on='site')
+df_site_home = df_site_home.drop(labels=['id_x','id_y'],axis=1)
+
+#Unimos los sites con la info del home con el lenguaje
+df_site_home_lan = df_site_home.merge(df_language[df_language['engine'] == 'GOOGLE'],left_on='site',right_on='site')
+#Le agregamos una columna mas que usaremos para el analisis de los datos
+df_site_home_lan['illicit_category'] = ""
+df_site_home_lan['illicit_value'] = 0
+
+#----------------------------------------Métodos---------------------------------------------------------
+
+def obtenerImagenBase64(plt,fig=None):
+        buffer = io.BytesIO()
+        if fig == None:
+            plt.savefig(buffer, format='png')
+        else:
+            fig.savefig(buffer,format='png')
+            plt.close(fig)
+        plt.close()
+        buffer.seek(0)
+        image_png = buffer.getvalue()
+        graphic_base64 = base64.b64encode(image_png)
+        
+        return graphic_base64.decode()
+
+#----------------------------------------FLASK---------------------------------------------------------
 
 app = Flask(__name__)
 
 @app.route("/")
 def index():
     return "<h1>Hello World!</h1>"
+
+@app.route("/getFuenteSitios") #en general
+def getDistFuenteSitios():
+    # Vemos la fuente de los sitios en general
+    total_all_source = df_site_source_status['source'].value_counts()
+
+    # Creamos el gráfico de pastel
+    plt.figure(figsize=(8, 8))
+    total_all_source.plot(kind='pie', autopct='%1.1f%%', startangle=90, fontsize=14)
+    plt.title('Distribución de fuentes de los sitios')
+    plt.ylabel('')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la imagen como JSON
+    return jsonify(
+        {
+            "getFuenteSitiosResponse": {
+                "imgb64": img_base64
+            }
+        }
+    )
+
+
+@app.route("/getFuenteSitiosActivos")
+def getFuenteSitiosActivos():
+    # Vemos la fuente de los sitios activos
+    df_site_active = df_site_source_status[df_site_source_status['current_status'] == 'FINISHED']
+    total_active_source = df_site_active['source'].value_counts()
+
+    # Creamos el gráfico de pastel
+    plt.figure(figsize=(8, 8))
+    total_active_source.plot(kind='pie', autopct='%1.1f%%', startangle=90, fontsize=14)
+    plt.title('Distribución de fuentes de sitios activos')
+    plt.ylabel('')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la imagen como JSON
+    return jsonify(
+        {
+            "getFuenteSitiosActivosResponse": {
+                "imgb64": img_base64
+            }
+        }
+    )
+
+@app.route("/getDistSitiosPorEstado")
+def getDistSitiosPorEstado():
+    # Vemos la distribución de sitios por estado
+    total_status_sites = df_site_status['status'].value_counts()
+
+    # Creamos el gráfico de pastel
+    plt.figure(figsize=(8, 8))
+    total_status_sites.plot(kind='pie', autopct='%1.1f%%', labeldistance=None, fontsize=14)
+    plt.title('Distribución de sitios por estado')
+    plt.ylabel('')
+    plt.legend(loc='upper right', bbox_to_anchor=(0.25, 0.25))
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la imagen como JSON
+    return jsonify(
+        {
+            "getDistSitiosPorEstadoResponse": {
+                "imgb64": img_base64
+            }
+        }
+    )
+
+@app.route("/getEvolucionTempSitiosProcesados")
+def getEvolucionTempSitiosProcesados():
+    # Evolucion temporal de los sitios procesados
+    df_ss_analysis = df_site_source_status.copy()
+    df_ss_analysis['timestamp'] = pd.to_datetime(df_ss_analysis['timestamp'])
+
+    df_ss_analysis_s = df_site_source_status.copy()
+    df_ss_analysis_s['timestamp_s'] = pd.to_datetime(df_ss_analysis_s['timestamp_s'])
+
+    df_ss_s = df_ss_analysis_s.copy()  # Con fecha de stop del crawling
+    df_ss = df_ss_analysis.copy()  # Con fecha de incorporacion a la bbdd
+
+    # Eliminar filas duplicadas para evitar KeyError
+    df_ss.drop_duplicates(subset='timestamp', keep='last', inplace=True)
+    df_ss_s.drop_duplicates(subset='timestamp_s', keep='last', inplace=True)
+
+    # Verificar si hay fechas válidas en el índice
+    if not df_ss.empty and not df_ss_s.empty:
+        df_ss_all = df_ss[df_ss['timestamp'] >= '2020-08-04 20:19:17']
+        df_ss_all_s = df_ss_s[df_ss_s['timestamp_s'] >= '2020-08-04 20:19:17']
+
+        temp_evo_sites = df_ss_all.resample('D', on='timestamp').count()['name'].cumsum()
+
+        # Ordenar el índice temporal de forma ascendente
+        temp_evo_sites.sort_index(inplace=True)
+
+        # Creamos el gráfico de líneas
+        plt.figure(figsize=(8, 8))
+        ax = temp_evo_sites.plot(kind='line', fontsize=14, style='o-')
+        ax.set_ylabel('Sitios procesados')
+        ax.set_xlabel('Fecha')
+
+        # Obtener la imagen codificada en Base64
+        img_base64 = obtenerImagenBase64(plt)
+
+        # Devolver la imagen como JSON
+        return jsonify(
+            {
+                "getEvolucionTempSitiosProcesadosResponse": {
+                    "imgb64": img_base64
+                }
+            }
+        )
+    else:
+        return jsonify({"error": "No hay fechas válidas en el índice o la fecha '2020-08-04 20:19:17' es la única fecha disponible."})
+
+@app.route("/getEvolucionTempSitiosCrawleados")
+def getEvolucionTempSitiosCrawleados():
+    # Evolucion temporal de los sitios crawleados
+    df_ss_analysis = df_site_source_status.copy()
+    df_ss_analysis['timestamp_s'] = pd.to_datetime(df_ss_analysis['timestamp_s'])
+
+    df_ss_analysis_s = df_site_source_status.copy()
+    df_ss_analysis_s['timestamp_s'] = pd.to_datetime(df_ss_analysis_s['timestamp_s'])
+
+    df_ss_s = df_ss_analysis_s.copy()  # Con fecha de stop del crawling
+    df_ss = df_ss_analysis.copy()  # Con fecha de incorporacion a la bbdd
+
+    df_ss_all_s = df_ss_s[df_ss_s['current_status'] == 'FINISHED']
+
+    # Verificar si hay fechas válidas en el índice
+    if not df_ss_all_s.empty:
+        temp_evo_sites_active = df_ss_all_s.resample('D', on='timestamp_s').count()['name'].cumsum()
+
+        # Ordenar el índice temporal de forma ascendente
+        temp_evo_sites_active.sort_index(inplace=True)
+
+        # Creamos el gráfico de líneas
+        plt.figure(figsize=(8, 8))
+        ax = temp_evo_sites_active.plot(kind='line', fontsize=14, style='o-')
+        ax.set_ylabel('Sitios crawleados con éxito', fontsize=14)
+        ax.set_xlabel('Fecha', fontsize=16)
+
+        # Obtener la imagen codificada en Base64
+        img_base64 = obtenerImagenBase64(plt)
+
+        # Devolver la imagen como JSON
+        return jsonify(
+            {
+                "getEvolucionTempSitiosCrawleadosResponse": {
+                    "imgb64": img_base64
+                }
+            }
+        )
+    else:
+        return jsonify({"error": "No hay fechas válidas en el índice de sitios crawleados con éxito."})
+
+# Ruta para obtener la comparación del número de sitios crawleados tras el primer día y al finalizar
+@app.route("/getComparacionCrawleadosFirstDayLastDay")
+def getComparacionCrawleadosFirstDayLastDay():
+
+    # Evolucion temporal de los sitios crawleados
+    df_ss_analysis = df_site_source_status.copy()
+    df_ss_analysis['timestamp_s'] = pd.to_datetime(df_ss_analysis['timestamp_s'])
+
+    df_ss_analysis_s = df_site_source_status.copy()
+    df_ss_analysis_s['timestamp_s'] = pd.to_datetime(df_ss_analysis_s['timestamp_s'])
+
+    df_ss_s = df_ss_analysis_s.copy()  # Con fecha de stop del crawling
+    df_ss = df_ss_analysis.copy()  # Con fecha de incorporacion a la bbdd
+
+    # Numero de sitios con crawling finalizado tras el primer día
+    df_ss_first_day = df_ss_s.loc[df_ss_s['timestamp_s'].dt.date == pd.to_datetime('2020-08-04').date()]
+
+    site_crawled_first_day = df_ss_first_day[df_ss_first_day['current_status'] == 'FINISHED']['source'].value_counts()
+
+    # Numero de sitios con crawling finalizado tras el último día
+    site_crawled_last_day = df_ss[df_ss['current_status'] == 'FINISHED']['source'].value_counts()
+
+    # Crear DataFrame para la comparación
+    df = pd.DataFrame({'Primer día': site_crawled_first_day, 'Al finalizar': site_crawled_last_day}, index=['DISCOVERED', 'SEED'])
+
+    # Creamos el gráfico de barras
+    plt.figure(figsize=(12, 8))
+    ax = df.plot(rot=0, kind='bar', fontsize=14)
+    for p in ax.patches:
+        ax.annotate(np.round(p.get_height(), decimals=2), (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+
+    ax.set_ylabel('Sitios correctamente crawleados')
+    ax.set_xlabel('Fuente')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    print(site_crawled_first_day)
+    print(site_crawled_last_day)
+
+    # Devolver la imagen como JSON
+    return jsonify(
+        {
+            "getComparacionCrawleadosFirstDayLastDayResponse": {
+                "imgb64": img_base64
+            }
+        }
+    )
+
+# Ruta para obtener el histograma de intentos de descubrimientos de sitios crawleados
+@app.route("/getHistogramaIntentosDescubrimientos")
+def getHistogramaIntentosDescubrimientos():
+    # Intentos de descubrimientos de los sitios crawleados
+    df_ss_analysis = df_site_source_status.copy()
+    df_ss_analysis['timestamp_s'] = pd.to_datetime(df_ss_analysis['timestamp_s'])
+
+    df_ss_analysis_s = df_site_source_status.copy()
+    df_ss_analysis_s['timestamp_s'] = pd.to_datetime(df_ss_analysis_s['timestamp_s'])
+
+    df_ss_s = df_ss_analysis_s.copy()  # Con fecha de stop del crawling
+    df_ss = df_ss_analysis.copy()  # Con fecha de incorporacion a la bbdd
+
+    try_disc_crawled_sites = df_ss[df_ss['current_status'] == 'FINISHED']['discovering_tries']
+
+    # Verificar si hay datos válidos para el histograma
+    if not try_disc_crawled_sites.empty:
+        # Creamos el histograma de intentos de descubrimientos de sitios crawleados
+        plt.figure(figsize=(15, 8))
+        ax = try_disc_crawled_sites.hist(bins=600, xlabelsize=18, ylabelsize=18)
+        ax.set_ylabel('Sitios crawleados con éxito', fontsize=18)
+        ax.set_xlabel('Intentos de descubrimiento', fontsize=18)
+
+        # Obtener la imagen codificada en Base64
+        img_base64 = obtenerImagenBase64(plt)
+
+        # Devolver la imagen como JSON
+        return jsonify(
+            {
+                "getHistogramaIntentosDescubrimientosResponse": {
+                    "imgb64": img_base64
+                }
+            }
+        )
+    else:
+        return jsonify({"error": "No hay datos válidos para generar el histograma de intentos de descubrimientos de sitios crawleados."})
+
+# Ruta para realizar el análisis de idioma según Google
+@app.route("/analisisIdiomaGoogle")
+def analisisIdiomaGoogle():
+    language_google = df_language[df_language['engine'] == 'GOOGLE']['language']
+    language_google = language_google.replace('', 'undefined')
+    language_google_count = language_google.value_counts()
+
+    # Definir el límite para agrupar en 'others'
+    # ToDo parametro 7 pasarlo por url
+    condition = language_google_count < 7
+    mask_obs = language_google_count[condition].index
+    mask_dict = dict.fromkeys(mask_obs, 'others')
+
+    language_google = language_google.replace(mask_dict)
+    language_google_count = language_google.value_counts()
+
+    # Obtener valores y porcentajes de cada idioma
+    language_google_count_norm = language_google.value_counts(normalize=True)
+    language_google_count_all = pd.concat([language_google_count, language_google_count_norm], axis=1)
+    language_google_count_all.columns = ['Valores', 'Porcentaje']
+
+    # Creamos el gráfico de pastel
+    plt.figure(figsize=(8, 8))
+    language_google_count.plot(kind='pie', autopct='%1.1f%%', labeldistance=None, fontsize=14)
+    plt.legend(loc='upper right', bbox_to_anchor=(0.25, 0.25))
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la tabla de valores y porcentajes y el gráfico como JSON
+    return jsonify(
+        {
+            "analisisIdiomaGoogleResponse": {
+                "tabla": language_google_count_all.to_dict(), 
+                "imgb64": img_base64
+            }
+        }
+    )
+
+# Ruta para realizar el análisis de idioma según NLTK
+@app.route("/analisisIdiomaNLTK")
+def analisisIdiomaNLTK():
+    language_nltk = df_language[df_language['engine'] == 'NLTK']['language']
+    language_nltk_count = language_nltk.value_counts()
+
+    # Definir el límite para agrupar en 'others'
+    condition = language_nltk_count < 17
+    mask_obs = language_nltk_count[condition].index
+    mask_dict = dict.fromkeys(mask_obs, 'others')
+
+    language_nltk = language_nltk.replace(mask_dict)
+    language_nltk_count = language_nltk.value_counts()
+
+    # Obtener valores y porcentajes de cada idioma
+    language_nltk_count_norm = language_nltk.value_counts(normalize=True)
+    language_nltk_count_all = pd.concat([language_nltk_count, language_nltk_count_norm], axis=1)
+    language_nltk_count_all.columns = ['Valores', 'Porcentaje']
+
+    # Creamos el gráfico de pastel
+    plt.figure(figsize=(8, 8))
+    language_nltk_count.plot(kind='pie', autopct='%1.1f%%', labeldistance=None, fontsize=14)
+    plt.legend(loc='upper right', bbox_to_anchor=(0.25, 0.25))
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la tabla de valores y porcentajes y el gráfico como JSON
+    return jsonify(
+        {
+            "analisisIdiomaNTLKResponse": {
+                "tabla": language_nltk_count_all.to_dict(),
+                "imgb64": img_base64
+            }
+        }
+    )
+
+#ToDo mostrar un input con el numero de sitios que tienen X número de paginas 
+# Ruta para realizar el análisis del número de páginas en los sitios crawleados
+@app.route("/analisisNumeroPaginas")
+def analisisNumeroPaginas():
+    total_in_status = df_site_status[df_site_status['status'] == 'FINISHED']['pages'].count()
+    value_count_pagescrawledsites = df_site_status[df_site_status['status'] == 'FINISHED']['pages'].value_counts()
+
+    # Obtener el número de sitios con 5 páginas o menos
+    num_sites_5_or_less = value_count_pagescrawledsites[value_count_pagescrawledsites.index <= 5].sum()
+
+    # Obtener porcentajes
+    percentage_pages_crawled_sites = (value_count_pagescrawledsites / total_in_status) * 100
+
+    # Obtener valores absolutos
+    absolute_values_pages_crawled_sites = value_count_pagescrawledsites
+
+    # Creamos la tabla con valores y porcentajes
+    analysis_table = pd.DataFrame({"Valores": absolute_values_pages_crawled_sites, "Porcentaje": percentage_pages_crawled_sites})
+
+    # Creamos el histograma de número de páginas
+    plt.figure(figsize=(15, 8))
+    ax = df_site_status[df_site_status['status'] == 'FINISHED']['pages'].hist(bins=100, range=(0, 100), xlabelsize=18, ylabelsize=18)
+
+    ax.set_ylabel('Sitios crawleados con éxito', fontsize=18)
+    ax.set_xlabel('Número de páginas', fontsize=18)
+
+    # Configurar el eje y en escala lineal
+    ax.set_yscale('linear')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la tabla de valores y porcentajes y el gráfico como JSON
+    return jsonify(
+        {
+            "analisisNumeroPaginasResponse": {
+                "tabla": analysis_table.to_dict(orient="index"), 
+                "imgb64": img_base64
+            }
+        }
+    )
+
+#ToDo meter parametro por url dentro de head() para obtener el top X de los sitios
+# Ruta para obtener el análisis del TOP 5 de sitios con más páginas crawleadas con éxito
+@app.route("/analisisTopPaginas")
+def analisisTopPaginas():
+    top_pages = df_site_status[df_site_status['status'] == 'FINISHED'][['abbr', 'pages', 'name']]
+    top_pages = top_pages.sort_values(by=['pages'], ascending=False).head()
+
+    # Creamos el gráfico de barras
+    plt.figure(figsize=(12, 8))
+    ax = top_pages.plot.bar(rot=45, fontsize=14, x='abbr')
+
+    for p in ax.patches:
+        ax.annotate(np.round(p.get_height(), decimals=2), (p.get_x() + p.get_width() / 2., p.get_height()), ha='center', va='center', xytext=(0, 10), textcoords='offset points')
+
+    ax.set_ylabel('Nº de páginas')
+    ax.set_xlabel('Abreviatura del sitio')
+
+    #Para que no se corten las labels de las imagenes
+    plt.tight_layout()
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico de barras como JSON
+    return jsonify(
+        {
+            "analisisTopPaginasResponse": {
+                "imgb64": img_base64,
+                "tabla": top_pages.to_dict(orient="records")
+            }
+        }
+    )
+
+
+
+#+++++++++++++++++++++++++++++++++++++++++++ dbutils ++++++++++++++++++++++++++++++++++++++++++++++++++
 
 @app.route('/get_sites', methods=['GET'])
 def get_sites():
@@ -51,12 +579,12 @@ def get_sites():
             timestamp_s=site.timestamp_s
         ).to_dict() for site in sites_list
     ]
+    total_all_source = sites_data['source'].value_counts()
+    print(total_all_source)
 
     # Devuelve los resultados como JSON
     return jsonify(sites_data)
 
-
-from pony.flask import db_session
 
 @app.route('/get_site_by_id/<int:s_id>', methods=['GET'])
 def get_site_by_id(s_id):
