@@ -96,11 +96,11 @@ $dark-theme-indigo: mat.define-dark-theme((
 
 
 
-// ======== MODO AZUL ========
+// ======== MODO AZUL CIAN ========
 
 $light-theme-cyan: mat.define-light-theme((
  color: (
-   primary: mat.define-palette(mat.$light-blue-palette, A700),
+   primary: mat.define-palette(mat.$cyan-palette),
    accent: $my-accent,
    warn: $my-warn
  )
@@ -108,19 +108,19 @@ $light-theme-cyan: mat.define-light-theme((
 
 $dark-theme-cyan: mat.define-dark-theme((
  color: (
-   primary: mat.define-palette(mat.$light-blue-palette, A700),
+   primary: mat.define-palette(mat.$cyan-palette),
    accent: $my-accent,
    warn: $my-warn
  )
 ));
 
 .darkThemeCyan {
-  --color-primario: #008CD6;
+  --color-primario: #00BCD4;
   @include mat.all-component-themes($dark-theme-cyan);
 }
 
 .lightThemeCyan {
-  --color-primario: #008CD6;
+  --color-primario: #00BCD4;
   @include mat.all-component-colors($light-theme-cyan);
 }
 
@@ -182,6 +182,36 @@ $dark-theme-green: mat.define-dark-theme((
 .lightThemeGreen {
   --color-primario: #4CAF50;
   @include mat.all-component-colors($light-theme-green);
+}
+
+
+
+// ======== MODO AMARILLO ========
+
+$light-theme-yellow: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$yellow-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-yellow: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$yellow-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemeYellow {
+  --color-primario: #FFEB3B;
+  @include mat.all-component-themes($dark-theme-yellow);
+}
+
+.lightThemeYellow {
+  --color-primario: #FFEB3B;
+  @include mat.all-component-colors($light-theme-yellow);
 }
 
 
