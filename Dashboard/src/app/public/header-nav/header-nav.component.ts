@@ -135,7 +135,10 @@ export class HeaderNavComponent implements OnInit {
   // Abre un modal con información acerca del sitio web
   abrirInfo()
   {
-    const dialogRef = this.dialog.open(ModalInfo);
+    const dialogRef = this.dialog.open(ModalInfo, {
+      width: '40vw',
+      maxHeight: '80vh',
+    });
   }
 
   // Cierra la sesión de un usuario

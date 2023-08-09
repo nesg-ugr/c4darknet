@@ -1,5 +1,5 @@
 <div class="center-content">
-  <mat-card class="mat-elevation-z8">
+  <mat-card class="mat-elevation-z8 modalInfo">
     <mat-card-content>
       <mat-card-title [ngStyle]="{'color': obtenerColorTexto()}">
         <mat-icon>info</mat-icon>
@@ -19,15 +19,16 @@
         <input type="text" matInput readonly value="{{ version }}">
       </mat-form-field>
 
-      <mat-form-field appearance='outline' floatLabel="always">
+      <mat-form-field appearance='outline' floatLabel="always" class="copyright-info">
         <mat-label>Copyright</mat-label>
         <input type="text" matInput readonly value="{{ copyright }}">
       </mat-form-field>
 
-      <mat-form-field style="width: 100%;" appearance='outline' floatLabel="always">
+      <mat-form-field style="width: 100%;" appearance='outline' floatLabel="always" class="descripcion-info">
         <mat-label>Descripción</mat-label>
-        <input type="text" matInput readonly value="{{ descripcion }}">
+        <textarea matInput readonly class="descripcion-textarea">{{ descripcion }}</textarea>
       </mat-form-field>
+
 
       <!-- <mat-form-field appearance='outline' floatLabel="always">
         <mat-label>Usuario conectado</mat-label>

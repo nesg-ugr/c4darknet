@@ -89,7 +89,7 @@ button p {
 }
 
 mat-sidenav {
-  margin: 0.625em 0px 0.625em 0px;
+  margin: 1.2em 0px 1.1em 0px;
   padding: 0.9375em;
   width: 20em;
   border-radius: 0.3125em;
@@ -184,7 +184,7 @@ button.ocultar {
 
 .center-content {
 
-  .logoVeridata {
+  .logo{
     width: 20%;
     position: relative;
     float: right;
@@ -210,4 +210,19 @@ button.ocultar {
 
 button:hover .cambiarConHover {
   font-family: 'Material Icons' !important;
+}
+
+.modalInfo{
+  width: 100%;
+}
+
+.copyright-info{
+  width: 22em;
+}
+
+.descripcion-info{
+  textarea{
+    height: 7.5em;
+    width: 100%;
+  }
 }
