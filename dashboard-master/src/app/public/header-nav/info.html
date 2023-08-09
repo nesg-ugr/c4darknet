@@ -1,0 +1,38 @@
+<div class="center-content">
+  <mat-card class="mat-elevation-z8">
+    <mat-card-content>
+      <mat-card-title [ngStyle]="{'color': obtenerColorTexto()}">
+        <mat-icon>info</mat-icon>
+        <p>Info</p>
+      </mat-card-title>
+
+      <mat-progress-bar mode="determinate" value="100"></mat-progress-bar>
+
+      <!-- <mat-card-content>
+        <a href="https://www.veridata.es" target="_blank">
+          <img class="logoVeridata" src="./assets/img/logo_veridata_black.png"/>
+        </a>
+      </mat-card-content> -->
+
+      <mat-form-field appearance='outline' floatLabel="always">
+        <mat-label>Versión</mat-label>
+        <input type="text" matInput readonly value="{{ version }}">
+      </mat-form-field>
+
+      <mat-form-field appearance='outline' floatLabel="always">
+        <mat-label>Copyright</mat-label>
+        <input type="text" matInput readonly value="{{ copyright }}">
+      </mat-form-field>
+
+      <mat-form-field style="width: 100%;" appearance='outline' floatLabel="always">
+        <mat-label>Descripción</mat-label>
+        <input type="text" matInput readonly value="{{ descripcion }}">
+      </mat-form-field>
+
+      <!-- <mat-form-field appearance='outline' floatLabel="always">
+        <mat-label>Usuario conectado</mat-label>
+        <input type="text" matInput readonly value="{{ usuario }}">
+      </mat-form-field> -->
+    </mat-card-content>
+  </mat-card>
+</div>

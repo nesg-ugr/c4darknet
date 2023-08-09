@@ -1,0 +1,215 @@
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$my-accent: mat.define-palette(mat.$blue-gray-palette);
+$my-warn: mat.define-palette(mat.$red-palette);
+
+
+// ======== MODO ROSA ========
+
+$light-theme-pink: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$pink-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-pink: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$pink-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemePink {
+  --color-primario: #E91E63;
+  @include mat.all-component-themes($dark-theme-pink);
+}
+
+.lightThemePink {
+  --color-primario: #E91E63;
+  @include mat.all-component-colors($light-theme-pink);
+}
+
+
+
+// ======== MODO MORADO ========
+
+$light-theme-purple: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$purple-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-purple: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$purple-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemePurple {
+  --color-primario: #9C27B0;
+  @include mat.all-component-themes($dark-theme-purple);
+}
+
+.lightThemePurple {
+  --color-primario: #9C27B0;
+  @include mat.all-component-colors($light-theme-purple);
+}
+
+
+
+// ======== MODO AÑIL ========
+
+$light-theme-indigo: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$indigo-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-indigo: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$indigo-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemeIndigo {
+  --color-primario: #3F51B5;
+  @include mat.all-component-themes($dark-theme-indigo);
+}
+
+.lightThemeIndigo {
+  --color-primario: #3F51B5;
+  @include mat.all-component-colors($light-theme-indigo);
+}
+
+
+
+// ======== MODO AZUL ========
+
+$light-theme-cyan: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$light-blue-palette, A700),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-cyan: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$light-blue-palette, A700),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemeCyan {
+  --color-primario: #008CD6;
+  @include mat.all-component-themes($dark-theme-cyan);
+}
+
+.lightThemeCyan {
+  --color-primario: #008CD6;
+  @include mat.all-component-colors($light-theme-cyan);
+}
+
+
+
+// ======== MODO VERDE AZULADO ========
+
+$light-theme-teal: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$teal-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-teal: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$teal-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemeTeal {
+  --color-primario: #009688;
+  @include mat.all-component-themes($dark-theme-teal);
+}
+
+.lightThemeTeal {
+  --color-primario: #009688;
+  @include mat.all-component-colors($light-theme-teal);
+}
+
+
+
+// ======== MODO VERDE ========
+
+$light-theme-green: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$green-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-green: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$green-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemeGreen {
+  --color-primario: #4CAF50;
+  @include mat.all-component-themes($dark-theme-green);
+}
+
+.lightThemeGreen {
+  --color-primario: #4CAF50;
+  @include mat.all-component-colors($light-theme-green);
+}
+
+
+
+// ======== MODO NARANJA ========
+
+$light-theme-orange: mat.define-light-theme((
+ color: (
+   primary: mat.define-palette(mat.$orange-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+$dark-theme-orange: mat.define-dark-theme((
+ color: (
+   primary: mat.define-palette(mat.$orange-palette),
+   accent: $my-accent,
+   warn: $my-warn
+ )
+));
+
+.darkThemeOrange {
+  --color-primario: #FF9800;
+  @include mat.all-component-themes($dark-theme-orange);
+}
+
+.lightThemeOrange {
+  --color-primario: #FF9800;
+  @include mat.all-component-colors($light-theme-orange);
+}
