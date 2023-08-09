@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { nodes, links } from './data.json'; // Importa los datos del grafo desde tu archivo JSON
+import { Node, Edge } from '@swimlane/ngx-graph'; // Importa los datos del grafo desde tu archivo JSON
 
 interface CustomNode {
   id: string; // Cambiar el tipo a string
@@ -21,13 +21,8 @@ interface CustomLink {
 })
 export class GrafoComponent implements OnInit {
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
   view: [number, number] = [1900, 910]; // Tamaño de la vista del gráfico
-  nodes: CustomNode[] = [
+  nodes: Node[] = [
     { id: '11', label: 'YAFI' },
     { id: '2351', label: 'TUI' },
     { id: '5753', label: 'unfiltered' },
@@ -40,7 +35,7 @@ export class GrafoComponent implements OnInit {
     { id: '2025', label: 'TestIndex' }
   ];
 
-  links: CustomLink[] = [
+  links: Edge[] = [
     { id: '6333', source: '5', target: '11' },
     { id: '32339', source: '706', target: '11' },
     { id: '11231', source: '11', target: '5753' },
@@ -63,5 +58,22 @@ export class GrafoComponent implements OnInit {
 
 
   layoutOptions = 'dagre';
+
+  constructor() { }
+
+  ngOnInit() {
+    this.nodes = this.nodes.map(node => ({ ...node, color: this.randomColor() }));
+  }
+
+
+
+  randomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
 
 }

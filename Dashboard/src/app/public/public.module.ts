@@ -42,7 +42,7 @@ import { GrafoComponent } from './grafo/grafo.component';
     MatTooltipModule,
     DragDropModule,
     MatMenuModule,
-    NgxGraphModule
+    NgxGraphModule,
   ],
   providers: [
     RestService,

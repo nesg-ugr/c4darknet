@@ -805,8 +805,8 @@ def topSitiosConexionesSalientes():
     )
 
 #ToDo reciba parametro para sacar el top X
-# Ruta para generar los archivos JSON de nodos y aristas para Gephi
-@app.route("/generarArchivosJSONGephi")
+# Ruta para generar los archivos JSON de nodos y aristas para Gephi (grafo)
+@app.route("/generarArchivosJSONGrafo")
 def generarArchivosJSONGephi():
 
     top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(10).reset_index(drop=True)

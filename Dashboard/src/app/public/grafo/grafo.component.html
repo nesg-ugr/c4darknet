@@ -1,2 +1,10 @@
-<ngx-graph [view]="view" [nodes]="nodes" [links]="links" [layout]="layoutOptions">
+<ngx-graph [view]="view" [nodes]="nodes" [links]="links" [layout]="layoutOptions" [showMiniMap]="true">
+  <ng-template #nodeTemplate let-node>
+    <svg:g class="node"
+    matTooltipPosition="above"
+    [matTooltip]="node.label"
+    >
+      <circle cx="10" cy="10" r="10" [attr.fill]="node.color"/>
+    </svg:g>
+  </ng-template>
 </ngx-graph>
