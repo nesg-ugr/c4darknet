@@ -7,6 +7,9 @@ import { AppComponent } from './app.component';
 import { CoreModule } from './core/core.module';
 import { SharedModule } from './core/shared/shared.module';
 
+import { NgxGraphModule } from '@swimlane/ngx-graph'; // Importa NgxGraphModule
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -17,6 +20,7 @@ import { SharedModule } from './core/shared/shared.module';
     BrowserAnimationsModule,
     SharedModule,
     CoreModule,
+    NgxGraphModule
   ],
   providers: [],
   bootstrap: [AppComponent]

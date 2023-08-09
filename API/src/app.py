@@ -554,7 +554,283 @@ def analisisTopPaginas():
         }
     )
 
+# Ruta para realizar el análisis del tiempo que tarda en crawlear los sitios
+@app.route("/analisisTiempoCrawleo")
+def analisisTiempoCrawleo():
+    total_in_status = df_site_status[df_site_status['status'] == 'FINISHED']['duration'].count()
+    duration_crawled_sites = df_site_status[df_site_status['status'] == 'FINISHED']['duration']
 
+    # Creamos el histograma del tiempo que tarda en crawlear los sitios
+    plt.figure(figsize=(15, 8))
+    ax = duration_crawled_sites.hist(bins=200, xlabelsize=18, ylabelsize=18)
+
+    ax.set_xlabel('Tiempo (minutos)', fontsize=18)
+    ax.set_ylabel('Número de sitios', fontsize=18)
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    return jsonify(
+        {
+            "analisisTiempoCrawleoResponse": {
+                "imgb64": img_base64,
+            }
+        }
+    )
+
+# Ruta para realizar el análisis de la relación entre duración y número de páginas
+@app.route("/analisisRelacionDuracionPaginas")
+def analisisRelacionDuracionPaginas():
+    pages_duration = df_site_status[df_site_status['status'] == 'FINISHED'][['pages', 'duration']]
+
+    # Creamos el gráfico de dispersión
+    plt.figure(figsize=(15, 8))
+    ax = pages_duration.plot.scatter(x='duration', y='pages', facecolors='none', edgecolors='deepskyblue', alpha=0.2, s=100)
+
+    ax.set_xlabel('Tiempo (minutos)')
+    ax.set_ylabel('Nº de páginas')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    return jsonify(
+        {
+            "analisisRelacionDuracionPaginasResponse": {
+                "imgb64": img_base64,
+            }
+        }
+    )
+
+# Ruta para realizar el análisis de la relación entre duración e intentos de descubrimiento
+@app.route("/analisisRelacionDuracionIntentos")
+def analisisRelacionDuracionIntentos():
+    discovering_duration = df_site_status[df_site_status['status'] == 'FINISHED'][['discovering_tries', 'duration']]
+
+    # Creamos el gráfico de dispersión
+    plt.figure(figsize=(15, 8))
+    ax = discovering_duration.plot.scatter(x='duration', y='discovering_tries', facecolors='none', edgecolors='deepskyblue', alpha=0.2, s=100)
+
+    ax.set_xlabel('Tiempo (minutos)')
+    ax.set_ylabel('Intentos de descubrimiento')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    return jsonify(
+        {
+            "analisisRelacionDuracionIntentosResponse": {
+                "imgb64": img_base64,
+            }
+        }
+    )
+
+# Ruta para realizar el análisis de la página principal
+@app.route("/analisisPaginaPrincipal")
+def analisisPaginaPrincipal():
+    words_home = df_sitehomeinfo['words']
+    images_home = df_sitehomeinfo['images']
+    scripts_home = df_sitehomeinfo['scripts']
+
+    # Crear histograma de palabras, imágenes y scripts en la página principal
+    plt.grid()
+    plt.hist(words_home, bins=4000, label="Words", hatch='/')
+    plt.hist(images_home, bins=4000, label="Images", hatch='.')
+    plt.hist(scripts_home, bins=100, label="Scripts", hatch='-')
+    plt.legend(loc='upper right')
+    plt.xscale("symlog")
+    plt.xlabel("Number of words/images/scripts", fontsize=8)
+    plt.ylabel("Number of sites", fontsize=8)
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Guardar la imagen en un archivo (opcional)
+    # plt.savefig('/home/emilio/Documentos/WordsScriptsImages2.svg')
+
+    # Devolver la imagen como JSON
+    return jsonify(
+        {
+            "analisisPaginaPrincipalResponse": {
+                "imgb64": img_base64,
+            }
+        }
+    )
+
+# Ruta para realizar el análisis del número de palabras en los sitios
+@app.route("/analisisNumeroPalabras")
+def analisisNumeroPalabras():
+    words_home = df_sitehomeinfo['words']
+    plt.figure(figsize=(15, 8))
+    ax = words_home.hist(bins=100, xlabelsize=18, ylabelsize=18)
+
+    ax.set_xlabel('Nº de palabras', fontsize=18)
+    ax.set_ylabel('Nº de sitios', fontsize=18)
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    return jsonify(
+        {
+            "analisisNumeroPalabrasResponse": {
+                "imgb64": img_base64,
+            }
+        }
+    )
+
+# Ruta para realizar el análisis de scripts en los sitios
+@app.route("/analisisScriptsSitios")
+def analisisScriptsSitios():
+    scripts_home = df_sitehomeinfo['scripts']
+    plt.figure(figsize=(15, 8))
+    ax = scripts_home.hist(bins=5, figsize=(15,8), range=[0, 5])
+
+    ax.set_xlabel('Nº de scripts')
+    ax.set_ylabel('Nº de sitios')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    return jsonify(
+        {
+            "analisisScriptsSitiosResponse": {
+                "imgb64": img_base64,
+            }
+        }
+    )
+
+# Ruta para realizar el análisis del número de imágenes en los sitios
+@app.route("/analisisNumeroImagenes")
+def analisisNumeroImagenes():
+    images_home = df_sitehomeinfo['images']
+    plt.figure(figsize=(15, 8))
+    ax = images_home.hist(bins=150, figsize=(15,8))
+    ax.set_xlabel('Nº de imágenes')
+    ax.set_ylabel('Nº de sitios')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    return jsonify(
+        {
+            "analisisNumeroImagenesResponse": {
+                "imgb64": img_base64,
+            }
+        }
+    )
+
+# Ruta para realizar el análisis de la conectividad saliente (outgoing)
+@app.route("/analisisConectividadSaliente")
+def analisisConectividadSaliente():
+    outgoing = df_connectivity['outgoing']
+
+    # Obtener valores y porcentajes de conectividad saliente
+    outgoing_count = outgoing.value_counts()
+    outgoing_count_norm = outgoing.value_counts(normalize=True)
+    outgoing_all = pd.concat([outgoing_count, outgoing_count_norm], axis=1)
+    outgoing_all.columns = ['Valores', 'Porcentaje']
+
+    # Creamos el histograma de conectividad saliente
+    plt.figure(figsize=(15, 8))
+    ax = outgoing.hist(bins=250, xlabelsize=18, ylabelsize=18)
+    ax.set_xlabel('Nº de outgoing', fontsize=18)
+    ax.set_ylabel('Nº de sitios', fontsize=18)
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la tabla de valores y porcentajes y el gráfico como JSON
+    return jsonify(
+        {
+            "analisisConectividadSalienteResponse": {
+                "imgb64": img_base64,
+                "tabla": outgoing_all.to_dict(orient="index"),
+            }
+        }
+    )
+
+# Ruta para realizar el análisis de enlaces salientes sin contar los que tienen 0 outgoing
+@app.route("/analisisEnlacesSalientes")
+def analisisEnlacesSalientes():
+
+    outgoing = df_connectivity['outgoing']
+
+    # Obtener valores y porcentajes de conectividad saliente
+    outgoing_count = outgoing.value_counts()
+    outgoing_count_norm = outgoing.value_counts(normalize=True)
+    outgoing_all = pd.concat([outgoing_count, outgoing_count_norm], axis=1)
+    outgoing_all.columns = ['Valores', 'Porcentaje']
+
+    outgoing_nozero = df_connectivity[df_connectivity['outgoing'] > 0]['outgoing']
+
+    # Creamos el histograma de enlaces salientes
+    plt.figure(figsize=(15, 8))
+    ax = outgoing_nozero.hist(bins=250, xlabelsize=18, ylabelsize=18)
+    ax.set_xlabel('Nº de enlaces salientes', fontsize=18)
+    ax.set_ylabel('Nº de sitios', fontsize=18)
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    return jsonify(
+        {
+            "analisisEnlacesSalientesResponse": {
+                "imgb64": img_base64,
+                "tabla": outgoing_all.to_dict(orient="index"),
+            }
+        }
+    )
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para obtener el top 10 de sitios con más conexiones salientes
+@app.route("/topSitiosConexionesSalientes")
+def topSitiosConexionesSalientes():
+    top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(10).reset_index(drop=True)
+    
+    # Convertir el DataFrame a un diccionario para el formato JSON
+    top_outgoing_dict = top_outgoing.to_dict(orient='records')
+    
+    return jsonify(
+        {
+            "topSitiosConexionesSalientesResponse": {
+                "top_outgoing": top_outgoing_dict
+            }
+        }
+    )
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para generar los archivos JSON de nodos y aristas para Gephi
+@app.route("/generarArchivosJSONGephi")
+def generarArchivosJSONGephi():
+
+    top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(10).reset_index(drop=True)
+
+    # DataFrame df_links y top_outgoing deben estar previamente definidos
+
+    df_links_topoutgoing = pd.DataFrame()
+
+    # Buscamos relaciones entre los 10 sitios tops
+    for i in range(0, 10):
+        for j in range(0, 10):
+            df_links_topoutgoing = pd.concat([df_links_topoutgoing, df_links[(df_links['Target'] == top_outgoing['site'][i]) & (df_links['Source'] == top_outgoing['site'][j])]])
+
+    # Crear listas de nodos y aristas en formato JSON
+    nodes_json = top_outgoing[['site', 'abbr']].rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
+    edges_json = df_links_topoutgoing.to_dict(orient='records')
+
+    # Devolver el contenido de los archivos JSON como respuesta utilizando jsonify
+    return jsonify({
+        "topSitiosConexionesSalientesResponse": {
+            "nodos": nodes_json,
+            "aristas": edges_json
+        }
+    })
 
 #+++++++++++++++++++++++++++++++++++++++++++ dbutils ++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -678,7 +954,7 @@ def get_incoming_links_by_site_id(ts_id):
 
                 # Agregar los atributos a la lista de enlaces
                 links_data.append({
-                    "id": link.id,
+                    "id_incoming_link": link.id,
                     "dst_site": dst_site_attributes,
                     "src_site": src_site_attributes
                 })

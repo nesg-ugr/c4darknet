@@ -1,3 +1,4 @@
+import { NgxGraphModule } from '@swimlane/ngx-graph';
 import { SharedModule } from './../core/shared/shared.module';
 import { PublicRoutingModule } from './public-routing.module';
 import { NgModule } from '@angular/core';
@@ -18,13 +19,15 @@ import { MensajesService } from '../core/services/mensajes/mensajes.service';
 import { RestService } from '../core/services/rest/rest.service';
 import { TemaService } from '../core/services/tema/tema.service';
 import { SnackbarComponent } from './snackbar/snackbar.component';
+import { GrafoComponent } from './grafo/grafo.component';
 
 @NgModule({
   declarations: [
     PublicComponent,
     HomeComponent,
     HeaderNavComponent,
-    ModalInfo
+    ModalInfo,
+    GrafoComponent
   ],
   imports: [
     CommonModule,
@@ -38,7 +41,8 @@ import { SnackbarComponent } from './snackbar/snackbar.component';
     // MonacoEditorModule.forRoot(),
     MatTooltipModule,
     DragDropModule,
-    MatMenuModule
+    MatMenuModule,
+    NgxGraphModule
   ],
   providers: [
     RestService,
