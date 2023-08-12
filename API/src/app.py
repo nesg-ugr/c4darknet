@@ -1,5 +1,4 @@
 import base64
-from collections import defaultdict
 import gzip
 import json
 import os
@@ -7,7 +6,6 @@ import io
 import sys
 import zipfile
 
-from googletrans import Translator
 from flask import Flask, jsonify, request, Response, render_template
 from flask_cors import CORS
 import numpy as np
