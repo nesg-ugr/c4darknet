@@ -2,7 +2,7 @@
   <ng-template #nodeTemplate let-node>
     <svg:g class="node"
     matTooltipPosition="above"
-    [matTooltip]="node.label"
+    [matTooltip]="node.label + ' Grado: ' + node.degree"
     >
       <circle cx="15" cy="15" r="13" [attr.fill]="node.color"/>
     </svg:g>

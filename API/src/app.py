@@ -806,6 +806,7 @@ def topSitiosConexionesSalientes():
         }
     )
 
+
 #ToDo reciba parametro para sacar el top X
 # Ruta para generar los archivos JSON de nodos y aristas para Gephi (grafo)
 @app.route("/generarArchivosJSONGrafoTopOutgoing")
@@ -835,6 +836,20 @@ def generarArchivosJSONGrafoTopOutgoing():
         for j in range(0, 10):
             df_links_topoutgoing = pd.concat([df_links_topoutgoing, df_links[(df_links['Target'] == top_outgoing['site'][i]) & (df_links['Source'] == top_outgoing['site'][j])]])
 
+    # Calcular los grados de los nodos
+    degrees = {}  # Diccionario para almacenar los grados de los nodos
+    for index, row in df_links_topoutgoing.iterrows():
+        source = row['Source']
+        target = row['Target']
+        if source in degrees:
+          degrees[source] += 1
+        else:
+          degrees[source] = 1
+        if target in degrees:
+          degrees[target] += 1
+        else:
+          degrees[target] = 1
+
     # Crear listas de nodos y aristas en formato JSON
     # Creación de JSON de nodos y aristas: Una vez que se han encontrado las relaciones entre los sitios web principales, el código crea representaciones 
     # JSON para los nodos (sitios web) y las aristas (relaciones entre sitios web). Utiliza el DataFrame top_outgoing para crear el JSON de nodos, 
@@ -842,6 +857,13 @@ def generarArchivosJSONGrafoTopOutgoing():
     # lo mismo con el DataFrame df_links_topoutgoing, que contiene las relaciones entre sitios, convirtiéndolo también a un formato de diccionario.
 
     nodes_json = top_outgoing[['site', 'abbr']].rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
+    for node in nodes_json:
+        node_id = node['id']
+        if node_id in degrees:
+          node['degree'] = degrees[node_id]
+        else:
+          node['degree'] = 0
+
     edges_json = df_links_topoutgoing.rename(columns={'Label': 'id', 'Source': 'source', 'Target': 'target'}).to_dict(orient='records')
     # Devolver el contenido de los archivos JSON como respuesta utilizando jsonify
     return jsonify({
@@ -965,19 +987,38 @@ def topSitiosMenosIncoming():
 # Ruta para generar los archivos JSON de nodos y aristas para Gephi (grafo)
 @app.route("/generarArchivosJSONGrafoTopIncoming")
 def generarArchivosJSONGrafoTopIncoming():
-
-    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(20).reset_index(drop=True)
-
+    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(10).reset_index(drop=True)
     df_links_topincoming = pd.DataFrame()
 
     # Buscamos relaciones entre los X sitios tops
-    #Buscamos relaciones entre los 10 sitios tops
-    for i in range(0,10):
-        for j in range(0,10):
+    # Buscamos relaciones entre los 10 sitios tops
+    for i in range(0, 10):
+        for j in range(0, 10):
             df_links_topincoming = pd.concat([df_links_topincoming, df_links[(df_links['Target'] == top_incoming['site'][i]) & (df_links['Source'] == top_incoming['site'][j])]])
 
+    # Calcular los grados de los nodos
+    degrees = {}  # Diccionario para almacenar los grados de los nodos
+    for index, row in df_links_topincoming.iterrows():
+        source = row['Source']
+        target = row['Target']
+        if source in degrees:
+          degrees[source] += 1
+        else:
+          degrees[source] = 1
+        if target in degrees:
+          degrees[target] += 1
+        else:
+          degrees[target] = 1
 
+    # Agregar el grado a cada nodo en el JSON de nodos
     nodes_json = top_incoming[['site', 'abbr']].rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
+    for node in nodes_json:
+        node_id = node['id']
+        if node_id in degrees:
+          node['degree'] = degrees[node_id]
+        else:
+          node['degree'] = 0
+
     edges_json = df_links_topincoming.rename(columns={'Label': 'id', 'Source': 'source', 'Target': 'target'}).to_dict(orient='records')
 
     # Devolver el contenido de los archivos JSON como respuesta utilizando jsonify
@@ -987,6 +1028,7 @@ def generarArchivosJSONGrafoTopIncoming():
             "aristas": edges_json
         }
     })
+
 
 
 #+++++++++++++++++++++++++++++++++++++++++++ dbutils ++++++++++++++++++++++++++++++++++++++++++++++++++
