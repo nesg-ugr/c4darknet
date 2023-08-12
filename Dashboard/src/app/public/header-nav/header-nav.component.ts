@@ -29,16 +29,10 @@ export class HeaderNavComponent implements OnInit {
   @Output() updateTema: EventEmitter<string> = new EventEmitter<string>();
   @HostBinding('class') componentCssClass: any;
 
-  mostrarBotonInicioSesion = true;
-  mostrarBotonesAplicaciones = false;
   mostrarProgressBar: boolean = false;
-  usuarioIncorrecto: boolean = false;
-  rellenamosFillerNav: boolean = false;
-  activarExperto: boolean = false;
   hayLogoCof: boolean = false;
 
   fillerNav: Array <{
-    proyecto: string;
     nombre: string;
     url: string;
     icon: string;
@@ -46,9 +40,6 @@ export class HeaderNavComponent implements OnInit {
   }> = [];
 
   mensaje: string = "";
-  logoCOF: string = "";
-  urlCOF: string = "";
-  rol: number = -1;
 
   iconoTema: string = '';
   textoTema: string = '';
@@ -58,7 +49,6 @@ export class HeaderNavComponent implements OnInit {
   mobileQuery: MediaQueryList;
   private _mobileQueryListener: () => void;
 
-  tieneAcceso : boolean = false
 
   // ================= Constructor ================= //
 
@@ -81,6 +71,9 @@ export class HeaderNavComponent implements OnInit {
     this.suscriberToDelete.push(this.temaService.variableObservable.subscribe(tema => {
       this.tema = tema == 'lightTheme' ? 'light' : 'dark';
     }));
+
+    this.fillerNav = [{nombre: 'Gráficas estáticas', url: 'graficas-estaticas', icon: 'show_chart', selected: false},{nombre: 'Gráficas dinámicas', url: 'graficas-dinamicas', icon: 'query_stats', selected: false},
+                      {nombre: 'Grafo outgoing', url: 'grafo-outgoing', icon: 'account_tree', selected: false}, {nombre: 'Grafo incoming', url: 'grafo-incoming', icon: 'account_tree', selected: false}]
   }
 
   ngOnInit()

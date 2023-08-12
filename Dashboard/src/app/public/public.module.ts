@@ -19,7 +19,8 @@ import { MensajesService } from '../core/services/mensajes/mensajes.service';
 import { RestService } from '../core/services/rest/rest.service';
 import { TemaService } from '../core/services/tema/tema.service';
 import { SnackbarComponent } from './snackbar/snackbar.component';
-import { GrafoComponent } from './grafo/grafo.component';
+import { GrafoIncomingComponent } from './grafo/grafo-incoming/grafo-incoming.component';
+import { GrafoOutgoingComponent } from './grafo/grafo-outgoing/grafo-outgoing.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import { GrafoComponent } from './grafo/grafo.component';
     HomeComponent,
     HeaderNavComponent,
     ModalInfo,
-    GrafoComponent
+    GrafoIncomingComponent,
+    GrafoOutgoingComponent
   ],
   imports: [
     CommonModule,

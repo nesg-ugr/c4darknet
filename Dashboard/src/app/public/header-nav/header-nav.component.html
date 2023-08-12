@@ -26,17 +26,17 @@
 
   <mat-sidenav-container id="sideNavContainer"  class="sidenav-container"  [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
     <mat-sidenav id="barralateral" class="mat-elevation-z8" #snav fixedInViewport [fixedTopGap]="56" tabindex="1">
-      <div *ngIf="mostrarBotonesAplicaciones">
-        <!-- <ng-container *ngIf="rellenamosFillerNav">
+      <div>
+        <ng-container>
           <div class="icono"  *ngFor="let nav of fillerNav; let i = index">
-            <button mat-icon-button routerLink="{{nav.proyecto.toLowerCase()}}/{{nav.url}}" (click)="actualizarAplicacion(nav.nombre, i)"
+            <button mat-icon-button routerLink="{{nav.url}}"
                     [ngClass]="{ 'marcarFondoTemaOscuro': nav.selected && tema == 'dark', 'marcarFondoTemaClaro': nav.selected && tema == 'light' }">
-              <mat-icon [ngClass]="{ 'cambiarConHover': nav.icon === 'health_and_safety' }" class="material-symbols-outlined">
+              <mat-icon [ngClass]="{ 'cambiarConHover': nav.icon }" class="material-symbols-outlined material-icons" *ngIf="nav.icon != ''">
                 {{ nav.icon }}
               </mat-icon><p>{{ nav.nombre }}</p>
             </button>
           </div>
-        </ng-container> -->
+        </ng-container>
         <br>
         <mat-divider></mat-divider>
         <br>

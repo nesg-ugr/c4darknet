@@ -3,6 +3,7 @@ import os
 import io
 import sys
 from flask import Flask, jsonify, request, Response, render_template
+from flask_cors import CORS
 import numpy as np
 from config import config
 import pandas as pd
@@ -152,6 +153,7 @@ def obtenerImagenBase64(plt,fig=None):
 #----------------------------------------FLASK---------------------------------------------------------
 
 app = Flask(__name__)
+CORS(app, origins="http://localhost:4200")
 
 @app.route("/")
 def index():
@@ -806,31 +808,186 @@ def topSitiosConexionesSalientes():
 
 #ToDo reciba parametro para sacar el top X
 # Ruta para generar los archivos JSON de nodos y aristas para Gephi (grafo)
-@app.route("/generarArchivosJSONGrafo")
-def generarArchivosJSONGephi():
+@app.route("/generarArchivosJSONGrafoTopOutgoing")
+def generarArchivosJSONGrafoTopOutgoing():
+    # Ordenar el DataFrame: Primero, el código asume que hay un DataFrame llamado df_site_conn que contiene información sobre la conexión de sitios web. 
+    # La función ordena este DataFrame en función de la columna 'outgoing' de manera descendente (mayor a menor) y selecciona los primeros 10 elementos. 
+    # Estos X elementos son los sitios web con la mayor cantidad de conexiones salientes (outgoing connections). Luego, esta información se guarda en un 
+    # DataFrame llamado top_outgoing.
+
+
 
     top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(10).reset_index(drop=True)
 
     # DataFrame df_links y top_outgoing deben estar previamente definidos
+    # Inicialización de DataFrame auxiliar: Se crea un DataFrame vacío llamado df_links_topoutgoing. Este DataFrame se utilizará para almacenar las relaciones 
+    # entre los X sitios web principales.
 
     df_links_topoutgoing = pd.DataFrame()
 
-    # Buscamos relaciones entre los 10 sitios tops
+    # Búsqueda de relaciones: A continuación, la función utiliza dos bucles for anidados para iterar sobre los 10 sitios web principales (en ambos bucles). 
+    # Dentro de estos bucles, se filtra el DataFrame df_links para encontrar las filas donde el sitio de origen (Source) coincide con el sitio del primer bucle 
+    # y el sitio de destino (Target) coincide con el sitio del segundo bucle. Estas filas filtradas se concatenan (agregan) al DataFrame df_links_topoutgoing, 
+    # que está siendo utilizado para almacenar las relaciones entre los X sitios principales.
+
+    # Buscamos relaciones entre los X sitios tops
     for i in range(0, 10):
         for j in range(0, 10):
             df_links_topoutgoing = pd.concat([df_links_topoutgoing, df_links[(df_links['Target'] == top_outgoing['site'][i]) & (df_links['Source'] == top_outgoing['site'][j])]])
 
     # Crear listas de nodos y aristas en formato JSON
-    nodes_json = top_outgoing[['site', 'abbr']].rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
-    edges_json = df_links_topoutgoing.to_dict(orient='records')
+    # Creación de JSON de nodos y aristas: Una vez que se han encontrado las relaciones entre los sitios web principales, el código crea representaciones 
+    # JSON para los nodos (sitios web) y las aristas (relaciones entre sitios web). Utiliza el DataFrame top_outgoing para crear el JSON de nodos, 
+    # seleccionando las columnas 'site' (renombrada como 'id') y 'abbr' (renombrada como 'label') y lo convierte a un formato de diccionario. Luego, hace 
+    # lo mismo con el DataFrame df_links_topoutgoing, que contiene las relaciones entre sitios, convirtiéndolo también a un formato de diccionario.
 
+    nodes_json = top_outgoing[['site', 'abbr']].rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
+    edges_json = df_links_topoutgoing.rename(columns={'Label': 'id', 'Source': 'source', 'Target': 'target'}).to_dict(orient='records')
     # Devolver el contenido de los archivos JSON como respuesta utilizando jsonify
     return jsonify({
-        "topSitiosConexionesSalientesResponse": {
+        "generarArchivosJSONGrafoTopOutgoingResponse": {
             "nodos": nodes_json,
             "aristas": edges_json
         }
     })
+
+# Ruta para realizar el análisis de la relación entre el número de páginas y outgoing
+@app.route("/analisisRelacionPaginasOutgoing")
+def analisisRelacionPaginasOutgoing():
+    pages_outgoing = pd.concat([df_site_conn['pages'], df_site_conn['outgoing']], axis=1)
+
+    # Creamos el gráfico de dispersión
+    plt.figure(figsize=(15, 8))
+    ax = pages_outgoing.plot.scatter(x='outgoing', y='pages', facecolors='none', edgecolors='deepskyblue', alpha=0.2, s=100)
+    ax.set_xlabel('Nº de outgoing')
+    ax.set_ylabel('Nº de páginas')
+
+    # Ajustar la escala de los ejes
+    ax.set_xlim(0, ax.get_xlim()[1])
+    ax.set_ylim(0, ax.get_ylim()[1])
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Seleccionar los 10 sitios con más páginas y enlaces salientes
+    top_pages_outgoing = df_site_conn.sort_values(by=['pages'], ascending=False).head(10)
+    top_pages_outgoing_data = top_pages_outgoing[['name', 'outgoing', 'pages']].to_dict(orient='records')
+
+    # Devolver el gráfico y los datos de los 10 sitios como JSON
+    return jsonify({
+        "analisisRelacionPaginasOutgoingResponse": {
+            "imgb64": img_base64,
+            "top_pages_outgoing": top_pages_outgoing_data
+        }
+    })
+
+# Ruta para realizar el análisis de los nodos entrantes (incoming)
+@app.route("/analisisNodosEntrantes")
+def analisisNodosEntrantes():
+    incoming = df_connectivity['incoming']
+
+    # Obtener valores y porcentajes de incoming
+    incoming_all = pd.concat([incoming.value_counts(), incoming.value_counts(normalize=True)], axis=1)
+    incoming_all.columns = ['Valores', 'Porcentaje']
+
+    # Obtener la fila correspondiente a incoming = 0
+    incoming_zero = incoming_all[incoming_all.index == 0]
+
+    # Creamos el histograma de nodos entrantes
+    plt.figure(figsize=(15, 8))
+    ax = incoming.hist(bins=175)
+    ax.set_xlabel('Nº de incoming')
+    ax.set_ylabel('Nº de sitios')
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la tabla de valores y porcentajes, y el gráfico como JSON
+    return jsonify({
+        "analisisNodosEntrantesResponse": {
+            "imgb64": img_base64,
+            "tabla": incoming_all.to_dict(orient="index"),
+        }
+    })
+
+# Ruta para realizar el análisis de la cantidad de sitios entrantes sin contar los que tienen 0 incoming
+@app.route("/analisisIncoming")
+def analisisIncoming():
+    incoming_nozero = df_connectivity[df_connectivity['incoming'] > 1]['incoming']
+
+    # Creamos el histograma de la cantidad de sitios entrantes sin contar los que tienen 0 incoming
+    plt.figure(figsize=(15, 8))
+    ax = incoming_nozero.hist(bins=175, xlabelsize=18, ylabelsize=18)
+    ax.set_xlabel('Nº de incoming', fontsize=18)
+    ax.set_ylabel('Nº de sitios', fontsize=18)
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver el gráfico como JSON
+    # Devolver la tabla de valores y porcentajes, y el gráfico como JSON
+    return jsonify({
+        "analisisIncomingResponse": {
+            "imgb64": img_base64,
+        }
+    })
+
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para obtener el top X de sitios con más incoming
+@app.route("/topSitiosIncoming")
+def topSitiosIncoming():
+    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(10).reset_index(drop=True)
+    top_incoming_json = top_incoming.to_dict(orient="records")
+    
+    return jsonify({
+        "topSitiosIncomingResponse": {
+            "top_incoming": top_incoming_json
+        }
+    })
+
+#ToDo reciba parametro para sacar el top menos X
+# Ruta para obtener el top X de sitios con menos incoming
+@app.route("/topSitiosMenosIncoming")
+def topSitiosMenosIncoming():
+    bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(10).reset_index(drop=True)
+
+    # Convertir el DataFrame en una lista de diccionarios
+    result_list = bottom_incoming.to_dict(orient='records')
+
+    return jsonify({
+        "topSitiosMenosIncomingResponse": {
+            "top_less_incoming": result_list
+        }
+    })
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para generar los archivos JSON de nodos y aristas para Gephi (grafo)
+@app.route("/generarArchivosJSONGrafoTopIncoming")
+def generarArchivosJSONGrafoTopIncoming():
+
+    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(20).reset_index(drop=True)
+
+    df_links_topincoming = pd.DataFrame()
+
+    # Buscamos relaciones entre los X sitios tops
+    #Buscamos relaciones entre los 10 sitios tops
+    for i in range(0,10):
+        for j in range(0,10):
+            df_links_topincoming = pd.concat([df_links_topincoming, df_links[(df_links['Target'] == top_incoming['site'][i]) & (df_links['Source'] == top_incoming['site'][j])]])
+
+
+    nodes_json = top_incoming[['site', 'abbr']].rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
+    edges_json = df_links_topincoming.rename(columns={'Label': 'id', 'Source': 'source', 'Target': 'target'}).to_dict(orient='records')
+
+    # Devolver el contenido de los archivos JSON como respuesta utilizando jsonify
+    return jsonify({
+        "generarArchivosJSONGrafoTopIncomingResponse": {
+            "nodos": nodes_json,
+            "aristas": edges_json
+        }
+    })
+
 
 #+++++++++++++++++++++++++++++++++++++++++++ dbutils ++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1007,12 +1164,9 @@ def get_incoming_links(ts_url):
         else:
             # Si el sitio no fue encontrado, devuelve un mensaje de error
             return jsonify({"error": "Site not found"}), 404
-        
-
-
 
 
 if __name__ == '__main__': 
     app.config.from_object(config['development'])
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
 

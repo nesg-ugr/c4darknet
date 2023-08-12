@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { PublicComponent } from './public.component';
+import { GrafoOutgoingComponent } from './grafo/grafo-outgoing/grafo-outgoing.component';
+import { GrafoIncomingComponent } from './grafo/grafo-incoming/grafo-incoming.component';
 
 
 const routes: Routes = [
@@ -11,6 +13,10 @@ const routes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       // { path: 'login',component: LoginComponent,  canActivate: [canActivate], data: { url:"login" }},
       { path: 'home', component: HomeComponent },
+      // { path: 'graficas-estaticas', component: HomeComponent },
+      // { path: 'graficas-dinamicas', component: HomeComponent },
+      { path: 'grafo-outgoing', component: GrafoOutgoingComponent },
+      { path: 'grafo-incoming', component: GrafoIncomingComponent },
       // { path: 'admin', component: AdminComponent, canActivate: [canActivate] },
     ]
   },

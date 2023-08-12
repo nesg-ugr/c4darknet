@@ -44,6 +44,13 @@ export class RestService
     )
   }
 
+  // Método para realizar una solicitud GET
+  get(metodo: string, url: string = environment.endPoint): Observable<any> {
+    return this.http.get(url + metodo, options).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: Response)
   {
     console.log('Código: ' + error.status);
