@@ -1,7 +1,10 @@
 import base64
+import gzip
+import json
 import os
 import io
 import sys
+import zipfile
 from flask import Flask, jsonify, request, Response, render_template
 from flask_cors import CORS
 import numpy as np
@@ -622,11 +625,11 @@ def analisisRelacionDuracionIntentos():
 
     # Devolver el gráfico como JSON
     return jsonify(
-        {
-            "analisisRelacionDuracionIntentosResponse": {
-                "imgb64": img_base64,
-            }
+      {
+        "analisisRelacionDuracionIntentosResponse": {
+          "imgb64": img_base64,
         }
+      }
     )
 
 # Ruta para realizar el análisis de la página principal
@@ -654,11 +657,11 @@ def analisisPaginaPrincipal():
 
     # Devolver la imagen como JSON
     return jsonify(
-        {
-            "analisisPaginaPrincipalResponse": {
-                "imgb64": img_base64,
-            }
+      {
+        "analisisPaginaPrincipalResponse": {
+          "imgb64": img_base64,
         }
+      }
     )
 
 # Ruta para realizar el análisis del número de palabras en los sitios
@@ -676,11 +679,11 @@ def analisisNumeroPalabras():
 
     # Devolver el gráfico como JSON
     return jsonify(
-        {
-            "analisisNumeroPalabrasResponse": {
-                "imgb64": img_base64,
-            }
+      {
+        "analisisNumeroPalabrasResponse": {
+          "imgb64": img_base64,
         }
+      }
     )
 
 # Ruta para realizar el análisis de scripts en los sitios
@@ -698,11 +701,11 @@ def analisisScriptsSitios():
 
     # Devolver el gráfico como JSON
     return jsonify(
-        {
-            "analisisScriptsSitiosResponse": {
-                "imgb64": img_base64,
-            }
+      {
+        "analisisScriptsSitiosResponse": {
+          "imgb64": img_base64,
         }
+      }
     )
 
 # Ruta para realizar el análisis del número de imágenes en los sitios
@@ -719,11 +722,11 @@ def analisisNumeroImagenes():
 
     # Devolver el gráfico como JSON
     return jsonify(
-        {
-            "analisisNumeroImagenesResponse": {
-                "imgb64": img_base64,
-            }
+      {
+        "analisisNumeroImagenesResponse": {
+          "imgb64": img_base64,
         }
+      }
     )
 
 # Ruta para realizar el análisis de la conectividad saliente (outgoing)
@@ -748,12 +751,12 @@ def analisisConectividadSaliente():
 
     # Devolver la tabla de valores y porcentajes y el gráfico como JSON
     return jsonify(
-        {
-            "analisisConectividadSalienteResponse": {
-                "imgb64": img_base64,
-                "tabla": outgoing_all.to_dict(orient="index"),
-            }
+      {
+        "analisisConectividadSalienteResponse": {
+          "imgb64": img_base64,
+          "tabla": outgoing_all.to_dict(orient="index"),
         }
+      }
     )
 
 # Ruta para realizar el análisis de enlaces salientes sin contar los que tienen 0 outgoing
@@ -781,12 +784,12 @@ def analisisEnlacesSalientes():
 
     # Devolver el gráfico como JSON
     return jsonify(
-        {
-            "analisisEnlacesSalientesResponse": {
-                "imgb64": img_base64,
-                "tabla": outgoing_all.to_dict(orient="index"),
-            }
+      {
+        "analisisEnlacesSalientesResponse": {
+          "imgb64": img_base64,
+          "tabla": outgoing_all.to_dict(orient="index"),
         }
+      }
     )
 
 #ToDo reciba parametro para sacar el top X
@@ -798,13 +801,11 @@ def topSitiosConexionesSalientes():
     # Convertir el DataFrame a un diccionario para el formato JSON
     top_outgoing_dict = top_outgoing.to_dict(orient='records')
     
-    return jsonify(
-        {
-            "topSitiosConexionesSalientesResponse": {
-                "top_outgoing": top_outgoing_dict
-            }
-        }
-    )
+    return jsonify({
+      "topSitiosConexionesSalientesResponse": {
+        "top_outgoing": top_outgoing_dict
+      }
+    })
 
 
 #ToDo reciba parametro para sacar el top X
@@ -867,10 +868,10 @@ def generarArchivosJSONGrafoTopOutgoing():
     edges_json = df_links_topoutgoing.rename(columns={'Label': 'id', 'Source': 'source', 'Target': 'target'}).to_dict(orient='records')
     # Devolver el contenido de los archivos JSON como respuesta utilizando jsonify
     return jsonify({
-        "generarArchivosJSONGrafoTopOutgoingResponse": {
-            "nodos": nodes_json,
-            "aristas": edges_json
-        }
+      "generarArchivosJSONGrafoTopOutgoingResponse": {
+        "nodos": nodes_json,
+        "aristas": edges_json
+      }
     })
 
 # Ruta para realizar el análisis de la relación entre el número de páginas y outgoing
@@ -897,10 +898,10 @@ def analisisRelacionPaginasOutgoing():
 
     # Devolver el gráfico y los datos de los 10 sitios como JSON
     return jsonify({
-        "analisisRelacionPaginasOutgoingResponse": {
-            "imgb64": img_base64,
-            "top_pages_outgoing": top_pages_outgoing_data
-        }
+      "analisisRelacionPaginasOutgoingResponse": {
+        "imgb64": img_base64,
+        "top_pages_outgoing": top_pages_outgoing_data
+      }
     })
 
 # Ruta para realizar el análisis de los nodos entrantes (incoming)
@@ -926,10 +927,10 @@ def analisisNodosEntrantes():
 
     # Devolver la tabla de valores y porcentajes, y el gráfico como JSON
     return jsonify({
-        "analisisNodosEntrantesResponse": {
-            "imgb64": img_base64,
-            "tabla": incoming_all.to_dict(orient="index"),
-        }
+      "analisisNodosEntrantesResponse": {
+        "imgb64": img_base64,
+        "tabla": incoming_all.to_dict(orient="index"),
+      }
     })
 
 # Ruta para realizar el análisis de la cantidad de sitios entrantes sin contar los que tienen 0 incoming
@@ -949,9 +950,9 @@ def analisisIncoming():
     # Devolver el gráfico como JSON
     # Devolver la tabla de valores y porcentajes, y el gráfico como JSON
     return jsonify({
-        "analisisIncomingResponse": {
-            "imgb64": img_base64,
-        }
+      "analisisIncomingResponse": {
+        "imgb64": img_base64,
+      }
     })
 
 
@@ -963,9 +964,9 @@ def topSitiosIncoming():
     top_incoming_json = top_incoming.to_dict(orient="records")
     
     return jsonify({
-        "topSitiosIncomingResponse": {
-            "top_incoming": top_incoming_json
-        }
+      "topSitiosIncomingResponse": {
+        "top_incoming": top_incoming_json
+      }
     })
 
 #ToDo reciba parametro para sacar el top menos X
@@ -978,9 +979,9 @@ def topSitiosMenosIncoming():
     result_list = bottom_incoming.to_dict(orient='records')
 
     return jsonify({
-        "topSitiosMenosIncomingResponse": {
-            "top_less_incoming": result_list
-        }
+      "topSitiosMenosIncomingResponse": {
+        "top_less_incoming": result_list
+      }
     })
 
 #ToDo reciba parametro para sacar el top X
@@ -1023,13 +1024,113 @@ def generarArchivosJSONGrafoTopIncoming():
 
     # Devolver el contenido de los archivos JSON como respuesta utilizando jsonify
     return jsonify({
-        "generarArchivosJSONGrafoTopIncomingResponse": {
-            "nodos": nodes_json,
-            "aristas": edges_json
-        }
+      "generarArchivosJSONGrafoTopIncomingResponse": {
+        "nodos": nodes_json,
+        "aristas": edges_json
+      }
+    })
+
+# Ruta para realizar el análisis de sitios aislados y su conectividad
+@app.route("/analisisSitiosAislados")
+def analisisSitiosAislados():
+    isolate_sites = df_site_conn[(df_site_conn['incoming'] <= 1) & (df_site_conn['outgoing'] == 0)]['name'].count()
+    some_conn = df_site_conn[(df_site_conn['incoming'] > 1) | (df_site_conn['outgoing'] > 0)]['name'].count()
+    compl_conn = df_site_conn[(df_site_conn['incoming'] > 1) & (df_site_conn['outgoing'] > 0)]['name'].count()
+
+    # Crear DataFrame con resultados
+    distr_conn = pd.DataFrame({'Tipo': ['Aislados', 'Algo conectados', 'Conectados'],
+                               'Conectividad': [isolate_sites, some_conn - compl_conn, compl_conn]})
+
+    # Crear el gráfico de pastel
+    plt.figure(figsize=(8, 8))
+    distr_conn.plot(kind='pie', y='Conectividad', labels=distr_conn['Tipo'], autopct='%1.1f%%', labeldistance=None, fontsize=14)
+    plt.legend(loc='upper right', bbox_to_anchor=(0.25, 0.25))
+
+    # Obtener la imagen codificada en Base64
+    img_base64 = obtenerImagenBase64(plt)
+
+    # Devolver la tabla de valores y el gráfico como JSON
+    return jsonify({
+      "analisisIncomingResponse": {
+          "tabla": distr_conn.to_dict(orient="index"), 
+          "imgb64": img_base64
+      }
     })
 
 
+# Ruta para obtener la información de nodos y aristas en formato JSON
+@app.route("/generarArchivosJSONGrafoCompleto")
+def generarArchivosJSONGrafoCompleto():
+    
+    df_nodes = df_site[['id','abbr']]
+
+    # Crear diccionario de nodos y aristas
+    nodes_json = df_nodes.rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
+    edges_json = df_links.rename(columns={'Label': 'id', 'Source': 'source', 'Target': 'target'}).to_dict(orient='records')
+
+    # Crear el JSON completo
+    json_data = {
+        "generarArchivosJSONGrafoCompletoResponse": {
+            "nodos": nodes_json,
+            "aristas": edges_json
+        }
+    }
+
+    # Convertir el JSON a string
+    json_str = json.dumps(json_data)
+
+    # Comprimir con Gzip
+    compressed_data = gzip.compress(json_str.encode('utf-8'))
+    
+    # Codificar en Base64
+    encoded_data = base64.b64encode(compressed_data).decode('utf-8')
+
+
+    return jsonify({"json_comprimido": encoded_data})
+
+# Ruta para obtener los archivos CSV comprimidos en JSON
+@app.route("/getCompressedCSVs")
+def getCompressedCSVs():
+    # Crear los DataFrames de ejemplo (reemplazar con tus propios DataFrames)
+    
+    df_nodes = df_site[['id','abbr']]
+
+    # Crear los contenidos de los archivos CSV como texto
+    csv_links_content = df_links.to_csv(index=False)
+    csv_nodes_content = df_nodes.rename(columns={'abbr': 'Label'}).to_csv(index=False)
+
+    # Crear un objeto ZipFile en memoria
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', compression=zipfile.ZIP_DEFLATED) as zipf:
+        zipf.writestr('aristas_total.csv', csv_links_content)
+        zipf.writestr('nodos_total.csv', csv_nodes_content)
+
+    # Codificar el archivo ZIP en base64
+    zip_base64 = base64.b64encode(zip_buffer.getvalue()).decode()
+
+    # Crear una respuesta en formato JSON con el archivo ZIP comprimido
+    response = jsonify({
+          "archivos_zip": zip_base64
+    })
+
+    return response
+
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para obtener el top de sitios con el mayor número de páginas
+@app.route("/getTopPaginas")
+def getTopPaginas():
+    # Obtener el top de sitios con el mayor número de páginas
+    top_pages = df_site.sort_values(by=['pages'], ascending=False).head(5).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    top_pages_json = top_pages.to_dict(orient="records")
+
+    return jsonify({
+      "getTopPaginasResponse": {
+          "top_paginas": top_pages_json
+      }
+    })
 
 #+++++++++++++++++++++++++++++++++++++++++++ dbutils ++++++++++++++++++++++++++++++++++++++++++++++++++
 

@@ -21,6 +21,7 @@ import { TemaService } from '../core/services/tema/tema.service';
 import { SnackbarComponent } from './snackbar/snackbar.component';
 import { GrafoIncomingComponent } from './grafo/grafo-incoming/grafo-incoming.component';
 import { GrafoOutgoingComponent } from './grafo/grafo-outgoing/grafo-outgoing.component';
+import { GrafoCompletoComponent } from './grafo/grafo-completo/grafo-completo.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { GrafoOutgoingComponent } from './grafo/grafo-outgoing/grafo-outgoing.co
     HeaderNavComponent,
     ModalInfo,
     GrafoIncomingComponent,
-    GrafoOutgoingComponent
+    GrafoOutgoingComponent,
+    GrafoCompletoComponent
   ],
   imports: [
     CommonModule,

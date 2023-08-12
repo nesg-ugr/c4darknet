@@ -25,10 +25,10 @@ export class GrafoIncomingComponent extends GrafoComponent implements OnInit {
         if (response.generarArchivosJSONGrafoTopIncomingResponse != undefined) {
           this.nodes = response.generarArchivosJSONGrafoTopIncomingResponse.nodos;
           this.links = response.generarArchivosJSONGrafoTopIncomingResponse.aristas;
+
+          this.nodes = this.nodes.map(node => ({ ...node, color: this.randomColor() }));
         }
-        this.nodes = this.nodes.map(node => ({ ...node, color: this.randomColor() }));
         this.booleanServices.updateProgressBar(false);
-        console.log(response);
       },
       error: (error) => {
         this.booleanServices.updateProgressBar(false);

@@ -4,6 +4,7 @@ import { HomeComponent } from './home/home.component';
 import { PublicComponent } from './public.component';
 import { GrafoOutgoingComponent } from './grafo/grafo-outgoing/grafo-outgoing.component';
 import { GrafoIncomingComponent } from './grafo/grafo-incoming/grafo-incoming.component';
+import { GrafoCompletoComponent } from './grafo/grafo-completo/grafo-completo.component';
 
 
 const routes: Routes = [
@@ -15,6 +16,7 @@ const routes: Routes = [
       { path: 'home', component: HomeComponent },
       // { path: 'graficas-estaticas', component: HomeComponent },
       // { path: 'graficas-dinamicas', component: HomeComponent },
+      { path: 'grafo-completo', component: GrafoCompletoComponent },
       { path: 'grafo-outgoing', component: GrafoOutgoingComponent },
       { path: 'grafo-incoming', component: GrafoIncomingComponent },
       // { path: 'admin', component: AdminComponent, canActivate: [canActivate] },
