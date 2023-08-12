@@ -1,10 +1,13 @@
 import base64
+from collections import defaultdict
 import gzip
 import json
 import os
 import io
 import sys
 import zipfile
+
+from googletrans import Translator
 from flask import Flask, jsonify, request, Response, render_template
 from flask_cors import CORS
 import numpy as np
@@ -1116,6 +1119,8 @@ def getCompressedCSVs():
     return response
 
 
+#+++++++++++++++++++++++++++++++++++++++++++ para hacer tablas ++++++++++++++++++++++++++++++++++++++++++++++++++
+
 #ToDo reciba parametro para sacar el top X
 # Ruta para obtener el top de sitios con el mayor número de páginas
 @app.route("/getTopPaginas")
@@ -1131,6 +1136,130 @@ def getTopPaginas():
           "top_paginas": top_pages_json
       }
     })
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para obtener los sitios con mayor número de intentos de descubrimiento
+@app.route("/sitiosMayorIntentosDescubrimiento")
+def sitiosMayorIntentosDescubrimiento():
+    # Obtener los sitios con mayor número de intentos de descubrimiento
+    top_trydiscovering = df_site_home.sort_values(by=['discovering_tries'], ascending=False).head(5).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
+
+    # Convertir el DataFrame a un formato JSON
+    top_trydiscovering = top_trydiscovering.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+      "sitiosMayorIntentosDescubrimientoResponse": {
+          "top_trydiscovering": top_trydiscovering
+      }
+    })
+
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para realizar el análisis del mayor número de palabras en los sitios crawleados
+@app.route("/analisisMayorNumeroPalabras")
+def analisisMayorNumeroPalabras():
+    # Ordenar el DataFrame por mayor número de palabras y obtener los 5 sitios principales
+    top_words = df_site_home.sort_values(by=['words'], ascending=False).head(5).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
+
+    # Convertir el DataFrame a un formato JSON
+    top_words = top_words.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+      "analisisMayorNumeroPalabrasResponse": {
+          "top_words": top_words
+      }
+    })
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para realizar el análisis de los sitios con el mayor número de imágenes
+@app.route("/analisisSitiosMayorNumeroImagenes")
+def analisisSitiosMayorNumeroImagenes():
+    # Obtener los sitios con el mayor número de imágenes
+    top_images = df_site_home.sort_values(by=['images'], ascending=False).head(5).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
+
+    # Convertir el DataFrame a un formato JSON
+    top_images = top_images.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+      "analisisSitiosMayorNumeroImagenesResponse": {
+          "top_images": top_images
+      }
+    })
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para obtener el mayor número de conexiones salientes en los sitios
+@app.route("/mayorNumeroOutgoing")
+def mayorNumeroOutgoing():
+    # Obtener el top 5 de conexiones salientes (outgoing)
+    top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(5).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    top_outgoing = top_outgoing.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+      "mayorNumeroOutgoingResponse": {
+          "top_outgoing": top_outgoing
+      }
+    })
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para obtener los 5 sitios con mayor número de conexiones entrantes
+@app.route("/topSitiosConexionesEntrantes")
+def topSitiosConexionesEntrantes():
+    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(5).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    top_incoming = top_incoming.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+      "topSitiosConexionesEntrantesResponse": {
+          "top_incoming": top_incoming
+      }
+    })
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para realizar el análisis de los sitios con menor número de conexiones entrantes (incoming)
+@app.route("/sitiosMenorNumeroOutgoing")
+def sitiosMenorNumeroOutgoing():
+    # Obtener los 5 sitios con el menor número de conexiones entrantes
+    bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(5).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    bottom_outgoing = bottom_outgoing.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+      "sitiosMenorNumeroOutgoingResponse": {
+          "bottom_outgoing": bottom_outgoing
+      }
+    })
+
+#ToDo reciba parametro para sacar el top X
+# Ruta para realizar el análisis de los sitios con menor número de conexiones entrantes (incoming)
+@app.route("/sitiosMenorNumeroIncoming")
+def sitiosMenorNumeroIncoming():
+    # Obtener los 5 sitios con el menor número de conexiones entrantes
+    bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(5).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    bottom_incoming = bottom_incoming.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+      "sitiosMenorNumeroIncomingResponse": {
+          "bottom_incoming": bottom_incoming
+      }
+    })
+
+
+#+++++++++++++++++++++++++++++++++++++++++++ ANALISIS DE DATOS CON SpaCy ++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 
 #+++++++++++++++++++++++++++++++++++++++++++ dbutils ++++++++++++++++++++++++++++++++++++++++++++++++++
 
