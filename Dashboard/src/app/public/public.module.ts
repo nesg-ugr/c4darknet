@@ -22,6 +22,9 @@ import { SnackbarComponent } from './snackbar/snackbar.component';
 import { GrafoIncomingComponent } from './grafo/grafo-incoming/grafo-incoming.component';
 import { GrafoOutgoingComponent } from './grafo/grafo-outgoing/grafo-outgoing.component';
 import { GrafoCompletoComponent } from './grafo/grafo-completo/grafo-completo.component';
+import { GraficasEstaticasComponent } from './graficasEstaticas/graficasEstaticas.component';
+import { GraficasDinamicasComponent } from './graficasDinamicas/graficasDinamicas.component';
+import { TablasAnalisisComponent } from './tablasAnalisis/tablasAnalisis.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +34,10 @@ import { GrafoCompletoComponent } from './grafo/grafo-completo/grafo-completo.co
     ModalInfo,
     GrafoIncomingComponent,
     GrafoOutgoingComponent,
-    GrafoCompletoComponent
+    GrafoCompletoComponent,
+    GraficasEstaticasComponent,
+    GraficasDinamicasComponent,
+    TablasAnalisisComponent
   ],
   imports: [
     CommonModule,

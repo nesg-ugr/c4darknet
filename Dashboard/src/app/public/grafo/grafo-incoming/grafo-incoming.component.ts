@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { GrafoComponent } from '../grafo.component';
 import { throwError } from 'rxjs';
 import { BooleanServices } from 'src/app/core/services/booleanService/booleanService.service';
@@ -20,6 +20,9 @@ export class GrafoIncomingComponent extends GrafoComponent implements OnInit {
   }
 
   ngOnInit() {
+
+    this.booleanServices.updateProgressBar(true);
+
     this.restService.get('generarArchivosJSONGrafoTopIncoming').subscribe({
       next: (response) => {
         if (response.generarArchivosJSONGrafoTopIncomingResponse != undefined) {
@@ -35,6 +38,11 @@ export class GrafoIncomingComponent extends GrafoComponent implements OnInit {
         throwError(() => error);
       }
     });
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.updateMaxDimensions();
   }
 
 

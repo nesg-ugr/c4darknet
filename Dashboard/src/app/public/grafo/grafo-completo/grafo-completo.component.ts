@@ -20,6 +20,9 @@ export class GrafoCompletoComponent extends GrafoComponent implements OnInit {
   }
 
   ngOnInit() {
+
+    this.booleanServices.updateProgressBar(true);
+
     this.restService.get('getCompressedCSVs').subscribe({
       next: (response) => {
         const zipBase64: string = response.archivos_zip;

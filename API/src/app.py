@@ -37,6 +37,13 @@ from pony.flask import db_session
 import database.dbutils as dbutils # Importamos todo el módulo dbutils.py
 import models.sites as sites# Importa el módulo sites desde la carpeta models
 
+
+
+app = Flask(__name__)
+CORS(app, origins="http://localhost:4200")
+
+
+
 #--------------------------------------------------------------------------------------------------------------
 
 # Parametros de configuracion para los graficos
@@ -141,27 +148,51 @@ df_site_home_lan['illicit_value'] = 0
 #----------------------------------------Métodos---------------------------------------------------------
 
 def obtenerImagenBase64(plt,fig=None):
-        buffer = io.BytesIO()
-        if fig == None:
-            plt.savefig(buffer, format='png')
-        else:
-            fig.savefig(buffer,format='png')
-            plt.close(fig)
-        plt.close()
-        buffer.seek(0)
-        image_png = buffer.getvalue()
-        graphic_base64 = base64.b64encode(image_png)
-        
-        return graphic_base64.decode()
+    buffer = io.BytesIO()
+    if fig == None:
+        plt.savefig(buffer, format='png')
+    else:
+        fig.savefig(buffer,format='png')
+        plt.close(fig)
+    plt.close()
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    graphic_base64 = base64.b64encode(image_png)
+    
+    return graphic_base64.decode()
+
+def quitarResponseJSON(json_data):
+  respuestas = {}
+  for key, value in json_data.items():
+    if "Response" in key:
+      respuestas= value
+  
+  return respuestas
+
+@app.route("/obtenerGraficasEstaticas")
+def obtenerGraficasEstaticas():
+  json_fuente_sitios = [getDistFuenteSitios(), getFuenteSitiosActivos(), getDistSitiosPorEstado(), getEvolucionTempSitiosProcesados(), getEvolucionTempSitiosCrawleados(),
+                        getComparacionCrawleadosFirstDayLastDay(), getHistogramaIntentosDescubrimientos(), analisisIdiomaGoogle(), analisisIdiomaNLTK(), analisisNumeroPaginas(),
+                        analisisTiempoCrawleo(), analisisRelacionDuracionPaginas(), analisisRelacionDuracionIntentos(), analisisPaginaPrincipal(), analisisNumeroPalabras(),
+                        analisisScriptsSitios(), analisisNumeroImagenes(), analisisConectividadSaliente(), analisisEnlacesSalientes(), analisisRelacionPaginasOutgoing(),
+                        analisisNodosEntrantes(), analisisIncoming(), analisisSitiosAislados()]
+    
+  json_resultados = []
+
+  for json_data in json_fuente_sitios:
+      contenido_deseado = quitarResponseJSON(json_data.get_json())
+      json_resultados.append(contenido_deseado)
+
+  return json_resultados
+
 
 #----------------------------------------FLASK---------------------------------------------------------
 
-app = Flask(__name__)
-CORS(app, origins="http://localhost:4200")
+
 
 @app.route("/")
 def index():
-    return "<h1>Hello World!</h1>"
+    return '<h1>Hello World!</h1>'
 
 @app.route("/getFuenteSitios") #en general
 def getDistFuenteSitios():
@@ -177,11 +208,15 @@ def getDistFuenteSitios():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la imagen como JSON
     return jsonify(
         {
             "getFuenteSitiosResponse": {
-                "imgb64": img_base64
+                "imgb64": img_base64,
+                "titulo" : 'Fuente de los sitios en general'
             }
         }
     )
@@ -202,11 +237,15 @@ def getFuenteSitiosActivos():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la imagen como JSON
     return jsonify(
         {
             "getFuenteSitiosActivosResponse": {
-                "imgb64": img_base64
+                "imgb64": img_base64,
+                "titulo" : 'Fuente de los sitios activos'
             }
         }
     )
@@ -226,11 +265,15 @@ def getDistSitiosPorEstado():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la imagen como JSON
     return jsonify(
         {
             "getDistSitiosPorEstadoResponse": {
-                "imgb64": img_base64
+                "imgb64": img_base64,
+                "titulo" : 'Distribución de sitios por estado'
             }
         }
     )
@@ -270,11 +313,15 @@ def getEvolucionTempSitiosProcesados():
         # Obtener la imagen codificada en Base64
         img_base64 = obtenerImagenBase64(plt)
 
+        # Cerrar la figura
+        plt.close()
+
         # Devolver la imagen como JSON
         return jsonify(
             {
                 "getEvolucionTempSitiosProcesadosResponse": {
-                    "imgb64": img_base64
+                    "imgb64": img_base64,
+                    "titulo" : 'Evolución temporal de los sitios procesados'
                 }
             }
         )
@@ -311,11 +358,15 @@ def getEvolucionTempSitiosCrawleados():
         # Obtener la imagen codificada en Base64
         img_base64 = obtenerImagenBase64(plt)
 
+        # Cerrar la figura
+        plt.close()
+
         # Devolver la imagen como JSON
         return jsonify(
             {
                 "getEvolucionTempSitiosCrawleadosResponse": {
-                    "imgb64": img_base64
+                    "imgb64": img_base64,
+                    "titulo" : 'Evolución temporal de los sitios crawleados'
                 }
             }
         )
@@ -360,14 +411,18 @@ def getComparacionCrawleadosFirstDayLastDay():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
-    print(site_crawled_first_day)
-    print(site_crawled_last_day)
+    # Cerrar la figura
+    plt.close()
+
+    # print(site_crawled_first_day)
+    # print(site_crawled_last_day)
 
     # Devolver la imagen como JSON
     return jsonify(
         {
             "getComparacionCrawleadosFirstDayLastDayResponse": {
-                "imgb64": img_base64
+                "imgb64": img_base64,
+                "titulo" : 'Comparación del número de sitios crawleados el primer día y al finalizar'
             }
         }
     )
@@ -398,11 +453,15 @@ def getHistogramaIntentosDescubrimientos():
         # Obtener la imagen codificada en Base64
         img_base64 = obtenerImagenBase64(plt)
 
+        # Cerrar la figura
+        plt.close()
+
         # Devolver la imagen como JSON
         return jsonify(
             {
                 "getHistogramaIntentosDescubrimientosResponse": {
-                    "imgb64": img_base64
+                    "imgb64": img_base64,
+                    "titulo" : 'Intentos de descubrimientos de sitios crawleados'
                 }
             }
         )
@@ -438,12 +497,16 @@ def analisisIdiomaGoogle():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la tabla de valores y porcentajes y el gráfico como JSON
     return jsonify(
         {
             "analisisIdiomaGoogleResponse": {
                 "tabla": language_google_count_all.to_dict(), 
-                "imgb64": img_base64
+                "imgb64": img_base64,
+                "titulo" : 'Análisis de idioma según Google'
             }
         }
     )
@@ -475,12 +538,16 @@ def analisisIdiomaNLTK():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la tabla de valores y porcentajes y el gráfico como JSON
     return jsonify(
         {
             "analisisIdiomaNTLKResponse": {
                 "tabla": language_nltk_count_all.to_dict(),
-                "imgb64": img_base64
+                "imgb64": img_base64,
+                "titulo" : 'Análisis de idioma según NLTK'
             }
         }
     )
@@ -517,12 +584,16 @@ def analisisNumeroPaginas():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la tabla de valores y porcentajes y el gráfico como JSON
     return jsonify(
         {
             "analisisNumeroPaginasResponse": {
                 "tabla": analysis_table.to_dict(orient="index"), 
-                "imgb64": img_base64
+                "imgb64": img_base64,
+                "titulo" : 'Análisis número de páginas'
             }
         }
     )
@@ -555,7 +626,8 @@ def analisisTopPaginas():
         {
             "analisisTopPaginasResponse": {
                 "imgb64": img_base64,
-                "tabla": top_pages.to_dict(orient="records")
+                "tabla": top_pages.to_dict(orient="records"),
+                "titulo" : 'Análisis top páginas'
             }
         }
     )
@@ -576,11 +648,15 @@ def analisisTiempoCrawleo():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     return jsonify(
         {
             "analisisTiempoCrawleoResponse": {
                 "imgb64": img_base64,
+                "titulo" : 'Análisis tiempo crawleo'
             }
         }
     )
@@ -600,11 +676,15 @@ def analisisRelacionDuracionPaginas():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     return jsonify(
         {
             "analisisRelacionDuracionPaginasResponse": {
                 "imgb64": img_base64,
+                "titulo" : 'Análisis de la relación entre duración y número de páginas'
             }
         }
     )
@@ -624,11 +704,15 @@ def analisisRelacionDuracionIntentos():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     return jsonify(
       {
         "analisisRelacionDuracionIntentosResponse": {
-          "imgb64": img_base64,
+            "imgb64": img_base64,
+            "titulo" : 'Análisis de la relación entre duración e intentos de descubrimiento'
         }
       }
     )
@@ -653,6 +737,9 @@ def analisisPaginaPrincipal():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Guardar la imagen en un archivo (opcional)
     # plt.savefig('/home/emilio/Documentos/WordsScriptsImages2.svg')
 
@@ -660,7 +747,8 @@ def analisisPaginaPrincipal():
     return jsonify(
       {
         "analisisPaginaPrincipalResponse": {
-          "imgb64": img_base64,
+            "imgb64": img_base64,
+            "titulo" : 'Análisis de la página principal'
         }
       }
     )
@@ -678,11 +766,15 @@ def analisisNumeroPalabras():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     return jsonify(
       {
         "analisisNumeroPalabrasResponse": {
-          "imgb64": img_base64,
+            "imgb64": img_base64,
+            "titulo" : 'Análisis del número de palabras en los sitios'
         }
       }
     )
@@ -700,11 +792,15 @@ def analisisScriptsSitios():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     return jsonify(
       {
         "analisisScriptsSitiosResponse": {
-          "imgb64": img_base64,
+            "imgb64": img_base64,
+            "titulo" : 'Análisis del número de scripts en los sitios'
         }
       }
     )
@@ -721,11 +817,15 @@ def analisisNumeroImagenes():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     return jsonify(
       {
         "analisisNumeroImagenesResponse": {
-          "imgb64": img_base64,
+            "imgb64": img_base64,
+            "titulo" : 'Análisis del número de imágenes en los sitios'
         }
       }
     )
@@ -750,12 +850,16 @@ def analisisConectividadSaliente():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la tabla de valores y porcentajes y el gráfico como JSON
     return jsonify(
       {
         "analisisConectividadSalienteResponse": {
-          "imgb64": img_base64,
-          "tabla": outgoing_all.to_dict(orient="index"),
+            "imgb64": img_base64,
+            "tabla": outgoing_all.to_dict(orient="index"),
+            "titulo" : 'Análisis de la conectividad outgoing'
         }
       }
     )
@@ -783,12 +887,16 @@ def analisisEnlacesSalientes():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     return jsonify(
       {
         "analisisEnlacesSalientesResponse": {
-          "imgb64": img_base64,
-          "tabla": outgoing_all.to_dict(orient="index"),
+            "imgb64": img_base64,
+            "tabla": outgoing_all.to_dict(orient="index"),
+            "titulo" : 'Análisis de enlaces outoging sin contar los que tienen 0'
         }
       }
     )
@@ -803,9 +911,10 @@ def topSitiosConexionesSalientes():
     top_outgoing_dict = top_outgoing.to_dict(orient='records')
     
     return jsonify({
-      "topSitiosConexionesSalientesResponse": {
-        "top_outgoing": top_outgoing_dict
-      }
+        "topSitiosConexionesSalientesResponse": {
+            "top_outgoing": top_outgoing_dict,
+            "titulo" : 'Top sitios con más conexiones outgoing'
+        }
     })
 
 
@@ -893,16 +1002,20 @@ def analisisRelacionPaginasOutgoing():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Seleccionar los 10 sitios con más páginas y enlaces salientes
     top_pages_outgoing = df_site_conn.sort_values(by=['pages'], ascending=False).head(10)
     top_pages_outgoing_data = top_pages_outgoing[['name', 'outgoing', 'pages']].to_dict(orient='records')
 
     # Devolver el gráfico y los datos de los 10 sitios como JSON
     return jsonify({
-      "analisisRelacionPaginasOutgoingResponse": {
-        "imgb64": img_base64,
-        "top_pages_outgoing": top_pages_outgoing_data
-      }
+        "analisisRelacionPaginasOutgoingResponse": {
+            "imgb64": img_base64,
+            "top_pages_outgoing": top_pages_outgoing_data,
+            "titulo" : 'Análisis de la relación entre el número de páginas y outgoing'
+        }
     })
 
 # Ruta para realizar el análisis de los nodos entrantes (incoming)
@@ -926,12 +1039,16 @@ def analisisNodosEntrantes():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la tabla de valores y porcentajes, y el gráfico como JSON
     return jsonify({
-      "analisisNodosEntrantesResponse": {
-        "imgb64": img_base64,
-        "tabla": incoming_all.to_dict(orient="index"),
-      }
+        "analisisNodosEntrantesResponse": {
+            "imgb64": img_base64,
+            "tabla": incoming_all.to_dict(orient="index"),
+            "titulo" : 'Análisis de los nodos incoming'
+        }
     })
 
 # Ruta para realizar el análisis de la cantidad de sitios entrantes sin contar los que tienen 0 incoming
@@ -948,12 +1065,16 @@ def analisisIncoming():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver el gráfico como JSON
     # Devolver la tabla de valores y porcentajes, y el gráfico como JSON
     return jsonify({
-      "analisisIncomingResponse": {
-        "imgb64": img_base64,
-      }
+        "analisisIncomingResponse": {
+            "imgb64": img_base64,
+            "titulo" : 'Análisis de la cantidad de sitios incoming sin contar los que tienen 0'
+        }
     })
 
 
@@ -965,9 +1086,10 @@ def topSitiosIncoming():
     top_incoming_json = top_incoming.to_dict(orient="records")
     
     return jsonify({
-      "topSitiosIncomingResponse": {
-        "top_incoming": top_incoming_json
-      }
+        "topSitiosIncomingResponse": {
+            "top_incoming": top_incoming_json,
+            "titulo" : 'Top sitios con más conexiones incoming'
+        }
     })
 
 #ToDo reciba parametro para sacar el top menos X
@@ -980,9 +1102,26 @@ def topSitiosMenosIncoming():
     result_list = bottom_incoming.to_dict(orient='records')
 
     return jsonify({
-      "topSitiosMenosIncomingResponse": {
-        "top_less_incoming": result_list
-      }
+        "topSitiosMenosIncomingResponse": {
+            "top_less_incoming": result_list,
+            "titulo" : 'Top menos sitios con conexiones incoming'
+        }
+    })
+
+#ToDo reciba parametro para sacar el top menos X
+# Ruta para obtener el top X de sitios con menos incoming
+@app.route("/topSitiosMenosOutgoing")
+def topSitiosMenosOutgoing():
+    bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(10).reset_index(drop=True)
+
+    # Convertir el DataFrame en una lista de diccionarios
+    result_list = bottom_outgoing.to_dict(orient='records')
+
+    return jsonify({
+        "topSitiosMenosOutgoingResponse": {
+            "top_less_incoming": result_list,
+            "titulo" : 'Top menos sitios con conexiones outgoing'
+        }
     })
 
 #ToDo reciba parametro para sacar el top X
@@ -1050,12 +1189,16 @@ def analisisSitiosAislados():
     # Obtener la imagen codificada en Base64
     img_base64 = obtenerImagenBase64(plt)
 
+    # Cerrar la figura
+    plt.close()
+
     # Devolver la tabla de valores y el gráfico como JSON
     return jsonify({
-      "analisisIncomingResponse": {
-          "tabla": distr_conn.to_dict(orient="index"), 
-          "imgb64": img_base64
-      }
+        "analisisIncomingResponse": {
+            "tabla": distr_conn.to_dict(orient="index"), 
+            "imgb64": img_base64,
+            "titulo" : 'Análisis de sitios aislados y su conectividad'
+        }
     })
 
 
@@ -1130,9 +1273,10 @@ def getTopPaginas():
     top_pages_json = top_pages.to_dict(orient="records")
 
     return jsonify({
-      "getTopPaginasResponse": {
-          "top_paginas": top_pages_json
-      }
+        "getTopPaginasResponse": {
+            "top_paginas": top_pages_json,
+            "titulo" : 'Top sitios con el mayor número de páginas'
+        }
     })
 
 #ToDo reciba parametro para sacar el top X
@@ -1147,9 +1291,10 @@ def sitiosMayorIntentosDescubrimiento():
 
     # Devolver los resultados en formato JSON
     return jsonify({
-      "sitiosMayorIntentosDescubrimientoResponse": {
-          "top_trydiscovering": top_trydiscovering
-      }
+        "sitiosMayorIntentosDescubrimientoResponse": {
+            "top_trydiscovering": top_trydiscovering,
+            "titulo" : 'Top sitios con mayor número de intentos de descubrimiento'
+        }
     })
 
 
@@ -1165,9 +1310,10 @@ def analisisMayorNumeroPalabras():
 
     # Devolver los resultados en formato JSON
     return jsonify({
-      "analisisMayorNumeroPalabrasResponse": {
-          "top_words": top_words
-      }
+        "analisisMayorNumeroPalabrasResponse": {
+            "top_words": top_words,
+            "titulo" : 'Análisis del mayor número de palabras en los sitios crawleados'
+        }
     })
 
 #ToDo reciba parametro para sacar el top X
@@ -1182,9 +1328,10 @@ def analisisSitiosMayorNumeroImagenes():
 
     # Devolver los resultados en formato JSON
     return jsonify({
-      "analisisSitiosMayorNumeroImagenesResponse": {
-          "top_images": top_images
-      }
+        "analisisSitiosMayorNumeroImagenesResponse": {
+            "top_images": top_images,
+            "titulo" : 'Análisis de los sitios con el mayor número de imágenes'
+        }
     })
 
 #ToDo reciba parametro para sacar el top X
@@ -1199,9 +1346,10 @@ def mayorNumeroOutgoing():
 
     # Devolver los resultados en formato JSON
     return jsonify({
-      "mayorNumeroOutgoingResponse": {
-          "top_outgoing": top_outgoing
-      }
+        "mayorNumeroOutgoingResponse": {
+            "top_outgoing": top_outgoing,
+            "titulo" : 'Mayor número de conexiones outgoing en los sitios'
+        }
     })
 
 #ToDo reciba parametro para sacar el top X
@@ -1215,9 +1363,10 @@ def topSitiosConexionesEntrantes():
 
     # Devolver los resultados en formato JSON
     return jsonify({
-      "topSitiosConexionesEntrantesResponse": {
-          "top_incoming": top_incoming
-      }
+        "topSitiosConexionesEntrantesResponse": {
+            "top_incoming": top_incoming,
+            "titulo" : 'Mayor número de conexiones incoming'
+        }
     })
 
 #ToDo reciba parametro para sacar el top X
@@ -1232,13 +1381,14 @@ def sitiosMenorNumeroOutgoing():
 
     # Devolver los resultados en formato JSON
     return jsonify({
-      "sitiosMenorNumeroOutgoingResponse": {
-          "bottom_outgoing": bottom_outgoing
-      }
+        "sitiosMenorNumeroOutgoingResponse": {
+            "bottom_outgoing": bottom_outgoing,
+            "titulo" : 'Análisis de los sitios con menor número de conexiones incoming'
+        }
     })
 
 #ToDo reciba parametro para sacar el top X
-# Ruta para realizar el análisis de los sitios con menor número de conexiones entrantes (incoming)
+# Ruta para realizar el análisis de los sitios con menor número de conexiones outgoing
 @app.route("/sitiosMenorNumeroIncoming")
 def sitiosMenorNumeroIncoming():
     # Obtener los 5 sitios con el menor número de conexiones entrantes
@@ -1249,9 +1399,10 @@ def sitiosMenorNumeroIncoming():
 
     # Devolver los resultados en formato JSON
     return jsonify({
-      "sitiosMenorNumeroIncomingResponse": {
-          "bottom_incoming": bottom_incoming
-      }
+        "sitiosMenorNumeroIncomingResponse": {
+            "bottom_incoming": bottom_incoming,
+            "titulo" : 'Análisis de los sitios con menor número de conexiones outgoing'
+        }
     })
 
 

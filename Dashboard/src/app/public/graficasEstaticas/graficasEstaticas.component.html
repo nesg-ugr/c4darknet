@@ -1,0 +1,12 @@
+<ng-container *ngIf="cargado">
+  <section class="contenedor-graficasEstaticas">
+    <ng-container *ngFor="let grafica of graficas">
+      <section class="contenedor-grafica">
+        <h1 class="titulo">{{ grafica.titulo }}</h1>
+        <mat-card>
+          <img mat-card-image class="grafica" [src]="'data:image/png;base64,' + grafica.imgb64">
+        </mat-card>
+      </section>
+    </ng-container>
+  </section>
+</ng-container>

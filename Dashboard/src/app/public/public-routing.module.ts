@@ -5,6 +5,8 @@ import { PublicComponent } from './public.component';
 import { GrafoOutgoingComponent } from './grafo/grafo-outgoing/grafo-outgoing.component';
 import { GrafoIncomingComponent } from './grafo/grafo-incoming/grafo-incoming.component';
 import { GrafoCompletoComponent } from './grafo/grafo-completo/grafo-completo.component';
+import { GraficasEstaticasComponent } from './graficasEstaticas/graficasEstaticas.component';
+import { GraficasDinamicasComponent } from './graficasDinamicas/graficasDinamicas.component';
 
 
 const routes: Routes = [
@@ -14,8 +16,8 @@ const routes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       // { path: 'login',component: LoginComponent,  canActivate: [canActivate], data: { url:"login" }},
       { path: 'home', component: HomeComponent },
-      // { path: 'graficas-estaticas', component: HomeComponent },
-      // { path: 'graficas-dinamicas', component: HomeComponent },
+      { path: 'graficas-estaticas', component: GraficasEstaticasComponent },
+      { path: 'graficas-dinamicas', component: GraficasDinamicasComponent },
       { path: 'grafo-completo', component: GrafoCompletoComponent },
       { path: 'grafo-outgoing', component: GrafoOutgoingComponent },
       { path: 'grafo-incoming', component: GrafoIncomingComponent },

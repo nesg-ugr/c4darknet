@@ -1,4 +1,3 @@
-import { Component } from '@angular/core';
 import { Node, Edge } from '@swimlane/ngx-graph'; // Importa los datos del grafo desde tu archivo JSON
 import { BooleanServices } from 'src/app/core/services/booleanService/booleanService.service';
 import { MensajesService } from 'src/app/core/services/mensajes/mensajes.service';
@@ -11,14 +10,24 @@ export abstract class GrafoComponent {
 
   links: Edge[] = [];
 
+  maxWidth: number = 0;
+  maxHeight: number= 0;
+
 
   layoutOptions = {
     orientation: 'LR'
   };
 
   constructor(protected mensajesService: MensajesService, protected restService: RestService, protected booleanServices: BooleanServices) {
+    this.updateMaxDimensions();
+  }
 
 
+
+  updateMaxDimensions() {
+    this.maxWidth = window.innerWidth;
+    this.maxHeight = window.innerHeight;
+    this.view = [this.maxWidth, this.maxHeight - 80]
   }
 
   randomColor() {
