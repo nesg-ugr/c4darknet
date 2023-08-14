@@ -4,6 +4,7 @@ import json
 import os
 import io
 import sys
+import threading
 import zipfile
 
 from flask import Flask, jsonify, request, Response, render_template
@@ -185,6 +186,42 @@ def obtenerGraficasEstaticas():
 
   return json_resultados
 
+#Con hebras
+@app.route("/obtenerGraficasEstaticasHebras")
+def obtenerGraficasEstaticas():
+    def obtener_json(func):
+        json_data = func()
+        contenido_deseado = quitarResponseJSON(json_data.get_json())
+        return contenido_deseado
+
+    funciones = [
+        getDistFuenteSitios, getFuenteSitiosActivos, getDistSitiosPorEstado, getEvolucionTempSitiosProcesados, getEvolucionTempSitiosCrawleados,
+        getComparacionCrawleadosFirstDayLastDay, getHistogramaIntentosDescubrimientos, analisisIdiomaGoogle, analisisIdiomaNLTK, analisisNumeroPaginas,
+        analisisTiempoCrawleo, analisisRelacionDuracionPaginas, analisisRelacionDuracionIntentos, analisisPaginaPrincipal, analisisNumeroPalabras,
+        analisisScriptsSitios, analisisNumeroImagenes, analisisConectividadSaliente, analisisEnlacesSalientes, analisisRelacionPaginasOutgoing,
+        analisisNodosEntrantes, analisisIncoming, analisisSitiosAislados
+    ]
+
+    num_threads = 4  # Número máximo de hilos a crear
+    threads = []
+    json_resultados = []
+
+    for i in range(0, len(funciones), num_threads):
+        grupo_funciones = funciones[i:i+num_threads]
+        grupo_threads = []
+
+        for func in grupo_funciones:
+            thread = threading.Thread(target=lambda f=func: grupo_threads.append(obtener_json(f)))
+            thread.start()
+            threads.append(thread)
+
+        for thread in grupo_threads:
+            thread.join()
+
+    for thread in threads:
+        thread.join()
+
+    return json_resultados
 
 #----------------------------------------FLASK---------------------------------------------------------
 
