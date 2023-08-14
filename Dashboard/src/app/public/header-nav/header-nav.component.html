@@ -33,7 +33,7 @@
                     [ngClass]="{ 'marcarFondoTemaOscuro': nav.selected && tema == 'dark', 'marcarFondoTemaClaro': nav.selected && tema == 'light' }">
               <mat-icon [ngClass]="{ 'cambiarConHover': nav.icon }" class="material-symbols-outlined material-icons" *ngIf="nav.icon != ''">
                 {{ nav.icon }}
-              </mat-icon><p>{{ nav.nombre }}</p>
+              </mat-icon><p class="nav-nombre">{{ nav.nombre }}</p>
             </button>
           </div>
         </ng-container>

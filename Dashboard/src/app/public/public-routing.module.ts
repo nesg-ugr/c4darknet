@@ -7,6 +7,7 @@ import { GrafoIncomingComponent } from './grafo/grafo-incoming/grafo-incoming.co
 import { GrafoCompletoComponent } from './grafo/grafo-completo/grafo-completo.component';
 import { GraficasEstaticasComponent } from './graficasEstaticas/graficasEstaticas.component';
 import { GraficasDinamicasComponent } from './graficasDinamicas/graficasDinamicas.component';
+import { TablasAnalisisComponent } from './tablasAnalisis/tablasAnalisis.component';
 
 
 const routes: Routes = [
@@ -21,6 +22,7 @@ const routes: Routes = [
       { path: 'grafo-completo', component: GrafoCompletoComponent },
       { path: 'grafo-outgoing', component: GrafoOutgoingComponent },
       { path: 'grafo-incoming', component: GrafoIncomingComponent },
+      { path: 'tablas', component: TablasAnalisisComponent },
       // { path: 'admin', component: AdminComponent, canActivate: [canActivate] },
     ]
   },
