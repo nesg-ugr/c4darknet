@@ -74,7 +74,7 @@ export class HeaderNavComponent implements OnInit {
 
     this.fillerNav = [{nombre: 'Gráficas estáticas', url: 'graficas-estaticas', icon: 'show_chart', selected: false},{nombre: 'Gráficas dinámicas', url: 'graficas-dinamicas', icon: 'query_stats', selected: false},
                       {nombre: 'Descargar CSV grafo completo', url: 'grafo-completo', icon: 'download', selected: false},{nombre: 'Grafo outgoing', url: 'grafo-outgoing', icon: 'account_tree', selected: false},
-                      {nombre: 'Grafo incoming', url: 'grafo-incoming', icon: 'account_tree', selected: false}
+                      {nombre: 'Grafo incoming', url: 'grafo-incoming', icon: 'account_tree', selected: false}, {nombre: 'Tablas', url: 'tablas', icon: 'account_tree', selected: false}
                     ]
   }
 
