@@ -4,6 +4,7 @@ import { throwError } from 'rxjs';
 import { BooleanServices } from 'src/app/core/services/booleanService/booleanService.service';
 import { MensajesService } from 'src/app/core/services/mensajes/mensajes.service';
 import { RestService } from 'src/app/core/services/rest/rest.service';
+import { TipoMensaje } from 'src/app/core/models/Mensaje';
 
 @Component({
   selector: 'app-grafo-incoming',
@@ -35,7 +36,7 @@ export class GrafoIncomingComponent extends GrafoComponent implements OnInit {
       },
       error: (error) => {
         this.booleanServices.updateProgressBar(false);
-        throwError(() => error);
+        this.mensajesService.sendMessage(error.message, TipoMensaje.ERROR);
       }
     });
   }

@@ -19,7 +19,7 @@ export class GraficasEstaticasComponent implements OnInit {
 
   ngOnInit() {
 
-    this.mensajesService.sendMessage("Generando gráficas estáticas", TipoMensaje.INFO)
+    this.mensajesService.sendMessage("Generando gráficas estáticas", TipoMensaje.INFO);
     this.booleanServices.updateProgressBar(true);
 
     this.restService.get('obtenerGraficasEstaticas').subscribe({
@@ -34,7 +34,8 @@ export class GraficasEstaticasComponent implements OnInit {
       },
       error: (error) => {
         this.booleanServices.updateProgressBar(false);
-        throwError(() => error);
+        this.mensajesService.sendMessage(error.message, TipoMensaje.ERROR);
+        // throwError(() => error);
       }
     });
 

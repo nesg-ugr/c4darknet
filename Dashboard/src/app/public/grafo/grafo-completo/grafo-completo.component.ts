@@ -5,6 +5,7 @@ import { MensajesService } from 'src/app/core/services/mensajes/mensajes.service
 import { RestService } from 'src/app/core/services/rest/rest.service';
 import { GrafoComponent } from '../grafo.component';
 import { UtilsModule } from 'src/app/core/models/Utils/Utils';
+import { TipoMensaje } from 'src/app/core/models/Mensaje';
 
 @Component({
   selector: 'app-grafo-completo',
@@ -51,7 +52,7 @@ export class GrafoCompletoComponent extends GrafoComponent implements OnInit {
       },
       error: (error) => {
         this.booleanServices.updateProgressBar(false);
-        throwError(() => error);
+        this.mensajesService.sendMessage(error.message, TipoMensaje.ERROR);
       }
     });
   }
