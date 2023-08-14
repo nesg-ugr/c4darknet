@@ -1,41 +1,32 @@
-<div class="mat-elevation-z8">
-  <table mat-table [dataSource]="dataSource" matSort (matSortChange)="announceSortChange($event)"
-        class="mat-elevation-z8">
-    <div class="tabla-contenedor"  #tablaContenedor>
-      <!-- Position Column -->
-      <ng-container matColumnDef="position">
-        <th class="encabezado-tabla primary-color" mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by number">
-          <p>No.</p>
-        </th>
-        <td class='primary-color column-header' mat-cell *matCellDef="let element"><p>{{element.position}} </p></td>
-      </ng-container>
+<ng-container *ngFor="let item of dataSources; let i =index">
+  <section class="contenedor-tabla">
+    <h1>{{titulos[i]}}</h1>
+    <div class="mat-elevation-z8">
 
-      <!-- Name Column -->
-      <ng-container matColumnDef="name">
-        <th class="encabezado-tabla primary-color" mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by name">
-          Name
-        </th>
-        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-      </ng-container>
+      <table mat-table [dataSource]="dataSources[i]" matSort (matSortChange)="announceSortChange($event)">
+        <div class="tabla-contenedor"  #tablaContenedor>
 
-      <!-- Weight Column -->
-      <ng-container matColumnDef="weight">
-        <th class="encabezado-tabla primary-color" mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by weight">
-          Weight
-        </th>
-        <td mat-cell *matCellDef="let element"> {{element.weight}} </td>
-      </ng-container>
+          <!-- Definición de la columna "position" fuera del bucle -->
+          <ng-container matColumnDef="position">
+            <th class="encabezado-tabla primary-color" mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by number">
+              <p>No.</p>
+            </th>
+            <td class='primary-color column-header' mat-cell *matCellDef="let element; let j = index"><p>{{j+1}} </p></td>
+          </ng-container>
 
-      <!-- Symbol Column -->
-      <ng-container matColumnDef="symbol">
-        <th class="encabezado-tabla primary-color" mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by symbol">
-          Symbol
-        </th>
-        <td mat-cell *matCellDef="let element"> {{element.symbol}} </td>
-      </ng-container>
+          <ng-container *ngFor="let clave of displayedColumns[i]">
+            <ng-container *ngIf="clave != 'position'" matColumnDef="{{clave}}">
+              <th class="encabezado-tabla primary-color" mat-header-cell *matHeaderCellDef mat-sort-header>
+                <p>{{clave}}</p>
+              </th>
+              <td mat-cell *matCellDef="let element;"><p>{{element[clave]}} </p></td>
+            </ng-container>
+          </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns[i]"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns[i];"></tr>
+        </div>
+      </table>
     </div>
-  </table>
-</div>
+  </section>
+</ng-container>

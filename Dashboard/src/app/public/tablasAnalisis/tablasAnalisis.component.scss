@@ -17,12 +17,8 @@ th.primary-color {
 }
 
 .tabla-contenedor {
-  max-width: 100%;
+  max-width: 90vw;
   overflow-x: auto;
-}
-
-table {
-  width: 100%;
 }
 
 .primary-color {
@@ -48,7 +44,7 @@ table {
 
 ::ng-deep .encabezado-tabla .mat-sort-header-content {
   text-align: center;
-  white-space: nowrap; /* Evita el salto de línea */
+  white-space: normal;
 }
 
 ::ng-deep .mat-sort-header-container{
@@ -68,9 +64,23 @@ table {
 }
 
 td p, th p {
-  white-space: nowrap;
+  white-space: normal;
   position: relative;
   top: 0.5em;
+  max-width: 34.2em;
+  word-wrap: break-word;
+}
+
+.contenedor-tabla{
+  margin: 2em auto 3em;
+  width: fit-content;
+
+  max-width: 96vw;
+  overflow-x: scroll;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .left-align {

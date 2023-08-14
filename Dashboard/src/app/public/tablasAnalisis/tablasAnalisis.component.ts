@@ -1,27 +1,12 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-
-
-export interface PeriodicElement {
-  name: string;
-  position: number;
-  weight: number;
-  symbol: string;
-}
-const ELEMENT_DATA: PeriodicElement[] = [
-  {position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H'},
-  {position: 2, name: 'Helium', weight: 4.0026, symbol: 'He'},
-  {position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li'},
-  {position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be'},
-  {position: 5, name: 'Boron', weight: 10.811, symbol: 'B'},
-  {position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C'},
-  {position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N'},
-  {position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O'},
-  {position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F'},
-  {position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne'},
-];
+import { TipoMensaje } from 'src/app/core/models/Mensaje';
+import { BooleanServices } from 'src/app/core/services/booleanService/booleanService.service';
+import { MensajesService } from 'src/app/core/services/mensajes/mensajes.service';
+import { RestService } from 'src/app/core/services/rest/rest.service';
 
 
 @Component({
@@ -31,19 +16,59 @@ const ELEMENT_DATA: PeriodicElement[] = [
 })
 
 export class TablasAnalisisComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
+  displayedColumns: string[][] = [];
 
-  constructor(private _liveAnnouncer: LiveAnnouncer) {}
+  dataSources: MatTableDataSource<any>[] = []; // Array de dataSources
+  cargado: boolean = false;
+  titulos: string[] = [];
+
+  constructor(private _liveAnnouncer: LiveAnnouncer, protected mensajesService: MensajesService, protected restService: RestService, protected booleanServices: BooleanServices) {}
 
   @ViewChild(MatSort) sort: MatSort;
 
   ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
   }
 
   ngOnInit() {
+    this.mensajesService.sendMessage("Generando tablas", TipoMensaje.INFO);
+    this.booleanServices.updateProgressBar(true);
 
+    this.restService.get('obtenerTablas').subscribe({
+      next: (response) => {
+        if (response ) {
+
+          response.obtenerTablasResponse.forEach((element: any) => {
+            this.titulos.push(element.titulo)
+            // Obtener las claves excluyendo "titulo"
+            const keysExcludingTitulo = Object.keys(element).filter(key => key !== 'titulo');
+
+            let columns = ['position'];
+            columns.push(...Object.keys(element[keysExcludingTitulo[0]][0]))
+
+            this.displayedColumns.push(columns);
+
+            console.log(this.displayedColumns)
+
+            this.dataSources.push(new MatTableDataSource(element[keysExcludingTitulo[0]]));
+          });
+
+          this.booleanServices.updateProgressBar(false);
+          this.cargado = true;
+
+          this.dataSources.forEach((dataSource) => {
+            dataSource.sort = this.sort;
+          });
+
+
+
+          this.mensajesService.sendMessage("Mostrando " + this.dataSources.length + " tablas", TipoMensaje.CORRECTO, 3500)
+        }
+      },
+      error: (error) => {
+        this.booleanServices.updateProgressBar(false);
+        this.mensajesService.sendMessage(error.message, TipoMensaje.ERROR);
+      }
+    });
   }
 
   announceSortChange(sortState: Sort) {

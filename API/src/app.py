@@ -188,6 +188,18 @@ def obtenerGraficasEstaticas():
 
   return json_resultados
 
+@app.route("/obtenerTablas")
+def obtenerTablas():
+  json_fuente_sitios = [getTopPaginas(), sitiosMayorIntentosDescubrimiento(), analisisMayorNumeroPalabras(), analisisSitiosMayorNumeroImagenes(), mayorNumeroOutgoing(),
+                        topSitiosConexionesEntrantes(), sitiosMenorNumeroOutgoing(), sitiosMenorNumeroIncoming()]
+    
+  json_resultados = []
+
+  for json_data in json_fuente_sitios:
+      contenido_deseado = quitarResponseJSON(json_data.get_json())
+      json_resultados.append(contenido_deseado)
+
+  return {"obtenerTablasResponse":json_resultados}
 
 #----------------------------------------FLASK---------------------------------------------------------
 
@@ -868,157 +880,6 @@ def analisisSitiosAislados():
         }
     })
 
-
-
-
-#+++++++++++++++++++++++++++++++++++++++++++ para hacer tablas ++++++++++++++++++++++++++++++++++++++++++++++++++
-
-# Tabla dinamica
-# Ruta para obtener el top de sitios con el mayor número de páginas
-@app.route("/getTopPaginas/<int:param>")
-def getTopPaginas(param=5):
-    # Obtener el top de sitios con el mayor número de páginas
-    top_pages = df_site.sort_values(by=['pages'], ascending=False).head(param).reset_index(drop=True)
-
-    # Convertir el DataFrame a un formato JSON
-    top_pages_json = top_pages.to_dict(orient="records")
-
-    return jsonify({
-        "getTopPaginasResponse": {
-            "top_paginas": top_pages_json,
-            "titulo" : 'Top sitios con el mayor número de páginas'
-        }
-    })
-
-# Tabla dinamica
-# Ruta para obtener los sitios con mayor número de intentos de descubrimiento
-@app.route("/sitiosMayorIntentosDescubrimiento/<int:param>")
-def sitiosMayorIntentosDescubrimiento(param=5):
-    # Obtener los sitios con mayor número de intentos de descubrimiento
-    top_trydiscovering = df_site_home.sort_values(by=['discovering_tries'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
-
-    # Convertir el DataFrame a un formato JSON
-    top_trydiscovering = top_trydiscovering.to_dict(orient="records")
-
-    # Devolver los resultados en formato JSON
-    return jsonify({
-        "sitiosMayorIntentosDescubrimientoResponse": {
-            "top_trydiscovering": top_trydiscovering,
-            "titulo" : 'Top sitios con mayor número de intentos de descubrimiento'
-        }
-    })
-
-
-# Tabla dinamica
-# Ruta para realizar el análisis del mayor número de palabras en los sitios crawleados
-@app.route("/analisisMayorNumeroPalabras/<int:param>")
-def analisisMayorNumeroPalabras(param=5):
-    # Ordenar el DataFrame por mayor número de palabras y obtener los 5 sitios principales
-    top_words = df_site_home.sort_values(by=['words'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
-
-    # Convertir el DataFrame a un formato JSON
-    top_words = top_words.to_dict(orient="records")
-
-    # Devolver los resultados en formato JSON
-    return jsonify({
-        "analisisMayorNumeroPalabrasResponse": {
-            "top_words": top_words,
-            "titulo" : 'Análisis del mayor número de palabras en los sitios crawleados'
-        }
-    })
-
-# Tabla dinamica
-# Ruta para realizar el análisis de los sitios con el mayor número de imágenes
-@app.route("/analisisSitiosMayorNumeroImagenes/<int:param>")
-def analisisSitiosMayorNumeroImagenes(param=5):
-    # Obtener los sitios con el mayor número de imágenes
-    top_images = df_site_home.sort_values(by=['images'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
-
-    # Convertir el DataFrame a un formato JSON
-    top_images = top_images.to_dict(orient="records")
-
-    # Devolver los resultados en formato JSON
-    return jsonify({
-        "analisisSitiosMayorNumeroImagenesResponse": {
-            "top_images": top_images,
-            "titulo" : 'Análisis de los sitios con el mayor número de imágenes'
-        }
-    })
-
-
-# Tabla dinamica
-# Ruta para obtener el mayor número de conexiones salientes en los sitios
-@app.route("/mayorNumeroOutgoing/<int:param>")
-def mayorNumeroOutgoing(param=5):
-    # Obtener el top 5 de conexiones salientes (outgoing)
-    top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
-
-    # Convertir el DataFrame a un formato JSON
-    top_outgoing = top_outgoing.to_dict(orient="records")
-
-    # Devolver los resultados en formato JSON
-    return jsonify({
-        "mayorNumeroOutgoingResponse": {
-            "top_outgoing": top_outgoing,
-            "titulo" : 'Mayor número de conexiones outgoing en los sitios'
-        }
-    })
-
-
-# Tabla dinamica
-# Ruta para obtener los 5 sitios con mayor número de conexiones entrantes
-@app.route("/topSitiosConexionesEntrantes/<int:param>")
-def topSitiosConexionesEntrantes(param=5):
-    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
-
-    # Convertir el DataFrame a un formato JSON
-    top_incoming = top_incoming.to_dict(orient="records")
-
-    # Devolver los resultados en formato JSON
-    return jsonify({
-        "topSitiosConexionesEntrantesResponse": {
-            "top_incoming": top_incoming,
-            "titulo" : 'Mayor número de conexiones incoming'
-        }
-    })
-
-# Tabla dinamica
-# Ruta para realizar el análisis de los sitios con menor número de conexiones entrantes (incoming)
-@app.route("/sitiosMenorNumeroOutgoing/<int:param>")
-def sitiosMenorNumeroOutgoing(param=5):
-    # Obtener los 5 sitios con el menor número de conexiones entrantes
-    bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(param).reset_index(drop=True)
-
-    # Convertir el DataFrame a un formato JSON
-    bottom_outgoing = bottom_outgoing.to_dict(orient="records")
-
-    # Devolver los resultados en formato JSON
-    return jsonify({
-        "sitiosMenorNumeroOutgoingResponse": {
-            "bottom_outgoing": bottom_outgoing,
-            "titulo" : 'Análisis de los sitios con menor número de conexiones incoming'
-        }
-    })
-
-# Tabla dinamica
-# Ruta para realizar el análisis de los sitios con menor número de conexiones outgoing
-@app.route("/sitiosMenorNumeroIncoming/<int:param>")
-def sitiosMenorNumeroIncoming(param=5):
-    # Obtener los 5 sitios con el menor número de conexiones entrantes
-    bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(param).reset_index(drop=True)
-
-    # Convertir el DataFrame a un formato JSON
-    bottom_incoming = bottom_incoming.to_dict(orient="records")
-
-    # Devolver los resultados en formato JSON
-    return jsonify({
-        "sitiosMenorNumeroIncomingResponse": {
-            "bottom_incoming": bottom_incoming,
-            "titulo" : 'Análisis de los sitios con menor número de conexiones outgoing'
-        }
-    })
-
-# Tabla estatica
 # Ruta para realizar el análisis del número de páginas en los sitios crawleados
 @app.route("/analisisNumeroPaginas")
 def analisisNumeroPaginas():
@@ -1064,11 +925,169 @@ def analisisNumeroPaginas():
         }
     )
 
+#+++++++++++++++++++++++++++++++++++++++++++ para hacer tablas ++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Tabla dinamica
+# Ruta para obtener el top de sitios con el mayor número de páginas
+@app.route("/getTopPaginas/<int:param>")
+@app.route("/getTopPaginas")
+def getTopPaginas(param=5):
+    # Obtener el top de sitios con el mayor número de páginas
+    top_pages = df_site.sort_values(by=['pages'], ascending=False).head(param).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    top_pages_json = top_pages.to_dict(orient="records")
+
+    return jsonify({
+        "getTopPaginasResponse": {
+            "top_paginas": top_pages_json,
+            "titulo" : 'Top sitios con el mayor número de páginas'
+        }
+    })
+
+# Tabla dinamica
+# Ruta para obtener los sitios con mayor número de intentos de descubrimiento
+@app.route("/sitiosMayorIntentosDescubrimiento/<int:param>")
+@app.route("/sitiosMayorIntentosDescubrimiento")
+def sitiosMayorIntentosDescubrimiento(param=5):
+    # Obtener los sitios con mayor número de intentos de descubrimiento
+    top_trydiscovering = df_site_home.sort_values(by=['discovering_tries'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
+
+    # Convertir el DataFrame a un formato JSON
+    top_trydiscovering = top_trydiscovering.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+        "sitiosMayorIntentosDescubrimientoResponse": {
+            "top_trydiscovering": top_trydiscovering,
+            "titulo" : 'Top sitios con mayor número de intentos de descubrimiento'
+        }
+    })
+
+
+# Tabla dinamica
+# Ruta para realizar el análisis del mayor número de palabras en los sitios crawleados
+@app.route("/analisisMayorNumeroPalabras/<int:param>")
+@app.route("/analisisMayorNumeroPalabras")
+def analisisMayorNumeroPalabras(param=5):
+    # Ordenar el DataFrame por mayor número de palabras y obtener los 5 sitios principales
+    top_words = df_site_home.sort_values(by=['words'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
+
+    # Convertir el DataFrame a un formato JSON
+    top_words = top_words.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+        "analisisMayorNumeroPalabrasResponse": {
+            "top_words": top_words,
+            "titulo" : 'Análisis del mayor número de palabras en los sitios crawleados'
+        }
+    })
+
+# Tabla dinamica
+# Ruta para realizar el análisis de los sitios con el mayor número de imágenes
+@app.route("/analisisSitiosMayorNumeroImagenes/<int:param>")
+@app.route("/analisisSitiosMayorNumeroImagenes")
+def analisisSitiosMayorNumeroImagenes(param=5):
+    # Obtener los sitios con el mayor número de imágenes
+    top_images = df_site_home.sort_values(by=['images'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
+
+    # Convertir el DataFrame a un formato JSON
+    top_images = top_images.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+        "analisisSitiosMayorNumeroImagenesResponse": {
+            "top_images": top_images,
+            "titulo" : 'Análisis de los sitios con el mayor número de imágenes'
+        }
+    })
+
+
+# Tabla dinamica
+# Ruta para obtener el mayor número de conexiones salientes en los sitios
+@app.route("/mayorNumeroOutgoing/<int:param>")
+@app.route("/mayorNumeroOutgoing")
+def mayorNumeroOutgoing(param=5):
+    # Obtener el top 5 de conexiones salientes (outgoing)
+    top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    top_outgoing = top_outgoing.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+        "mayorNumeroOutgoingResponse": {
+            "top_outgoing": top_outgoing,
+            "titulo" : 'Mayor número de conexiones outgoing en los sitios'
+        }
+    })
+
+
+# Tabla dinamica
+# Ruta para obtener los 5 sitios con mayor número de conexiones entrantes
+@app.route("/topSitiosConexionesEntrantes/<int:param>")
+@app.route("/topSitiosConexionesEntrantes")
+def topSitiosConexionesEntrantes(param=5):
+    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    top_incoming = top_incoming.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+        "topSitiosConexionesEntrantesResponse": {
+            "top_incoming": top_incoming,
+            "titulo" : 'Mayor número de conexiones incoming'
+        }
+    })
+
+# Tabla dinamica
+# Ruta para realizar el análisis de los sitios con menor número de conexiones entrantes (incoming)
+@app.route("/sitiosMenorNumeroOutgoing/<int:param>")
+@app.route("/sitiosMenorNumeroOutgoing")
+def sitiosMenorNumeroOutgoing(param=5):
+    # Obtener los 5 sitios con el menor número de conexiones entrantes
+    bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(param).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    bottom_outgoing = bottom_outgoing.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+        "sitiosMenorNumeroOutgoingResponse": {
+            "bottom_outgoing": bottom_outgoing,
+            "titulo" : 'Análisis de los sitios con menor número de conexiones incoming'
+        }
+    })
+
+# Tabla dinamica
+# Ruta para realizar el análisis de los sitios con menor número de conexiones outgoing
+@app.route("/sitiosMenorNumeroIncoming/<int:param>")
+@app.route("/sitiosMenorNumeroIncoming")
+def sitiosMenorNumeroIncoming(param=5):
+    # Obtener los 5 sitios con el menor número de conexiones entrantes
+    bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(param).reset_index(drop=True)
+
+    # Convertir el DataFrame a un formato JSON
+    bottom_incoming = bottom_incoming.to_dict(orient="records")
+
+    # Devolver los resultados en formato JSON
+    return jsonify({
+        "sitiosMenorNumeroIncomingResponse": {
+            "bottom_incoming": bottom_incoming,
+            "titulo" : 'Análisis de los sitios con menor número de conexiones outgoing'
+        }
+    })
+
+
+
 #----------------------------------------Graficas dinamicas---------------------------------------------------------
 
 
 # Ruta para realizar el análisis de idioma según Google
 @app.route("/analisisIdiomaGoogle/<int:param>")
+@app.route("/analisisIdiomaGoogle")
 def analisisIdiomaGoogle(param=7):
     language_google = df_language[df_language['engine'] == 'GOOGLE']['language']
     language_google = language_google.replace('', 'undefined')
@@ -1111,6 +1130,7 @@ def analisisIdiomaGoogle(param=7):
 
 # Ruta para realizar el análisis de idioma según NLTK
 @app.route("/analisisIdiomaNLTK/<int:param>")
+@app.route("/analisisIdiomaNLTK")
 def analisisIdiomaNLTK(param = 7):
     language_nltk = df_language[df_language['engine'] == 'NLTK']['language']
     language_nltk_count = language_nltk.value_counts()
@@ -1152,6 +1172,7 @@ def analisisIdiomaNLTK(param = 7):
 
 # Ruta para obtener el análisis del TOP 5 de sitios con más páginas crawleadas con éxito
 @app.route("/analisisTopPaginas/<int:param>")
+@app.route("/analisisTopPaginas")
 def analisisTopPaginas(param=5):
     top_pages = df_site_status[df_site_status['status'] == 'FINISHED'][['abbr', 'pages', 'name']]
     top_pages = top_pages.sort_values(by=['pages'], ascending=False).head(param)
@@ -1185,6 +1206,7 @@ def analisisTopPaginas(param=5):
 
 # Ruta para obtener el top 10 de sitios con más conexiones salientes
 @app.route("/topSitiosConexionesSalientes/<int:param>")
+@app.route("/topSitiosConexionesSalientes")
 def topSitiosConexionesSalientes(param=10):
     top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
     
@@ -1200,6 +1222,7 @@ def topSitiosConexionesSalientes(param=10):
 
 # Ruta para obtener el top X de sitios con más incoming
 @app.route("/topSitiosIncoming/<int:param>")
+@app.route("/topSitiosIncoming")
 def topSitiosIncoming(param=10):
     top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
     top_incoming_json = top_incoming.to_dict(orient="records")
@@ -1213,6 +1236,7 @@ def topSitiosIncoming(param=10):
 
 # Ruta para obtener el top X de sitios con menos incoming
 @app.route("/topSitiosMenosIncoming/<int:param>")
+@app.route("/topSitiosMenosIncoming")
 def topSitiosMenosIncoming(param=10):
     bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(param).reset_index(drop=True)
 
@@ -1228,6 +1252,7 @@ def topSitiosMenosIncoming(param=10):
 
 # Ruta para obtener el top X de sitios con menos incoming
 @app.route("/topSitiosMenosOutgoing/<int:param>")
+@app.route("/topSitiosMenosOutgoing")
 def topSitiosMenosOutgoing(param=10):
     bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(param).reset_index(drop=True)
 
@@ -1304,6 +1329,7 @@ def getCompressedCSVs():
 
 # Ruta para generar los archivos JSON de nodos y aristas para Gephi (grafo)
 @app.route("/generarArchivosJSONGrafoTopIncoming/<int:param>")
+@app.route("/generarArchivosJSONGrafoTopIncoming")
 def generarArchivosJSONGrafoTopIncoming(param=10):
     top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
     df_links_topincoming = pd.DataFrame()
@@ -1350,6 +1376,7 @@ def generarArchivosJSONGrafoTopIncoming(param=10):
 
 # Ruta para generar los archivos JSON de nodos y aristas para Gephi (grafo)
 @app.route("/generarArchivosJSONGrafoTopOutgoing/<int:param>")
+@app.route("/generarArchivosJSONGrafoTopOutgoing")
 def generarArchivosJSONGrafoTopOutgoing(param=10):
     # Ordenar el DataFrame: Primero, el código asume que hay un DataFrame llamado df_site_conn que contiene información sobre la conexión de sitios web. 
     # La función ordena este DataFrame en función de la columna 'outgoing' de manera descendente (mayor a menor) y selecciona los primeros 10 elementos. 
