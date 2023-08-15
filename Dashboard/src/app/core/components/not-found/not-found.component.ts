@@ -22,6 +22,6 @@ export class NotFoundComponent implements OnInit {
 
   redireccionar()
   {
-    this.router.navigate(["/home"]);
+    this.router.navigate(["/tablas"]);
   }
 }

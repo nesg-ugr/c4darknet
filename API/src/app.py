@@ -190,8 +190,7 @@ def obtenerGraficasEstaticas():
 
 @app.route("/obtenerGraficasDinamicas")
 def obtenerGraficasDinamicas():
-  json_fuente_sitios = [analisisIdiomaGoogle(), analisisIdiomaNLTK(), analisisTopPaginas(), topSitiosConexionesSalientes(), topSitiosIncoming(), topSitiosMenosIncoming(),
-                        topSitiosMenosOutgoing()]
+  json_fuente_sitios = [analisisIdiomaGoogle(), analisisIdiomaNLTK(), analisisTopPaginas()]
     
   json_resultados = []
 
@@ -199,12 +198,13 @@ def obtenerGraficasDinamicas():
       contenido_deseado = json_data.get_json()
       json_resultados.append(contenido_deseado)
 
-  return {"obtenerGraficasDinamicas":json_resultados}
+  return {"obtenerGraficasDinamicasResponse":json_resultados}
 
 @app.route("/obtenerTablas")
 def obtenerTablas():
   json_fuente_sitios = [getTopPaginas(), sitiosMayorIntentosDescubrimiento(), analisisMayorNumeroPalabras(), analisisSitiosMayorNumeroImagenes(), mayorNumeroOutgoing(),
-                        topSitiosConexionesEntrantes(), sitiosMenorNumeroOutgoing(), sitiosMenorNumeroIncoming()]
+                        topSitiosConexionesEntrantes(), sitiosMenorNumeroOutgoing(), sitiosMenorNumeroIncoming(), topSitiosConexionesSalientes(), topSitiosIncoming(), topSitiosMenosIncoming(),
+                        topSitiosMenosOutgoing()]
     
   json_resultados = []
 
@@ -1093,6 +1093,69 @@ def sitiosMenorNumeroIncoming(param=5):
         }
     })
 
+# Ruta para obtener el top 10 de sitios con más conexiones salientes
+@app.route("/topSitiosConexionesSalientes/<int:param>")
+@app.route("/topSitiosConexionesSalientes")
+def topSitiosConexionesSalientes(param=10):
+    top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
+    
+    # Convertir el DataFrame a un diccionario para el formato JSON
+    top_outgoing_dict = top_outgoing.to_dict(orient='records')
+    
+    return jsonify({
+        "topSitiosConexionesSalientesResponse": {
+            "top_outgoing": top_outgoing_dict,
+            "titulo" : 'Top sitios con más conexiones outgoing'
+        }
+    })
+
+# Ruta para obtener el top X de sitios con más incoming
+@app.route("/topSitiosIncoming/<int:param>")
+@app.route("/topSitiosIncoming")
+def topSitiosIncoming(param=10):
+    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
+    top_incoming_json = top_incoming.to_dict(orient="records")
+    
+    return jsonify({
+        "topSitiosIncomingResponse": {
+            "top_incoming": top_incoming_json,
+            "titulo" : 'Top sitios con más conexiones incoming'
+        }
+    })
+
+# Ruta para obtener el top X de sitios con menos incoming
+@app.route("/topSitiosMenosIncoming/<int:param>")
+@app.route("/topSitiosMenosIncoming")
+def topSitiosMenosIncoming(param=10):
+    bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(param).reset_index(drop=True)
+
+    # Convertir el DataFrame en una lista de diccionarios
+    result_list = bottom_incoming.to_dict(orient='records')
+
+    return jsonify({
+        "topSitiosMenosIncomingResponse": {
+            "top_less_incoming": result_list,
+            "titulo" : 'Top menos sitios con conexiones incoming'
+        }
+    })
+
+# Ruta para obtener el top X de sitios con menos incoming
+@app.route("/topSitiosMenosOutgoing/<int:param>")
+@app.route("/topSitiosMenosOutgoing")
+def topSitiosMenosOutgoing(param=10):
+    bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(param).reset_index(drop=True)
+
+    # Convertir el DataFrame en una lista de diccionarios
+    result_list = bottom_outgoing.to_dict(orient='records')
+
+    return jsonify({
+        "topSitiosMenosOutgoingResponse": {
+            "top_less_incoming": result_list,
+            "titulo" : 'Top menos sitios con conexiones outgoing'
+        }
+    })
+
+
 
 
 #----------------------------------------Graficas dinamicas---------------------------------------------------------
@@ -1175,7 +1238,7 @@ def analisisIdiomaNLTK(param = 7):
     # Devolver la tabla de valores y porcentajes y el gráfico como JSON
     return jsonify(
         {
-            "analisisIdiomaNTLKResponse": {
+            "analisisIdiomaNLTKResponse": {
                 "tabla": language_nltk_count_all.to_dict(),
                 "imgb64": img_base64,
                 "titulo" : 'Análisis de idioma según NLTK'
@@ -1217,67 +1280,6 @@ def analisisTopPaginas(param=5):
         }
     )
 
-# Ruta para obtener el top 10 de sitios con más conexiones salientes
-@app.route("/topSitiosConexionesSalientes/<int:param>")
-@app.route("/topSitiosConexionesSalientes")
-def topSitiosConexionesSalientes(param=10):
-    top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
-    
-    # Convertir el DataFrame a un diccionario para el formato JSON
-    top_outgoing_dict = top_outgoing.to_dict(orient='records')
-    
-    return jsonify({
-        "topSitiosConexionesSalientesResponse": {
-            "top_outgoing": top_outgoing_dict,
-            "titulo" : 'Top sitios con más conexiones outgoing'
-        }
-    })
-
-# Ruta para obtener el top X de sitios con más incoming
-@app.route("/topSitiosIncoming/<int:param>")
-@app.route("/topSitiosIncoming")
-def topSitiosIncoming(param=10):
-    top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
-    top_incoming_json = top_incoming.to_dict(orient="records")
-    
-    return jsonify({
-        "topSitiosIncomingResponse": {
-            "top_incoming": top_incoming_json,
-            "titulo" : 'Top sitios con más conexiones incoming'
-        }
-    })
-
-# Ruta para obtener el top X de sitios con menos incoming
-@app.route("/topSitiosMenosIncoming/<int:param>")
-@app.route("/topSitiosMenosIncoming")
-def topSitiosMenosIncoming(param=10):
-    bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(param).reset_index(drop=True)
-
-    # Convertir el DataFrame en una lista de diccionarios
-    result_list = bottom_incoming.to_dict(orient='records')
-
-    return jsonify({
-        "topSitiosMenosIncomingResponse": {
-            "top_less_incoming": result_list,
-            "titulo" : 'Top menos sitios con conexiones incoming'
-        }
-    })
-
-# Ruta para obtener el top X de sitios con menos incoming
-@app.route("/topSitiosMenosOutgoing/<int:param>")
-@app.route("/topSitiosMenosOutgoing")
-def topSitiosMenosOutgoing(param=10):
-    bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(param).reset_index(drop=True)
-
-    # Convertir el DataFrame en una lista de diccionarios
-    result_list = bottom_outgoing.to_dict(orient='records')
-
-    return jsonify({
-        "topSitiosMenosOutgoingResponse": {
-            "top_less_incoming": result_list,
-            "titulo" : 'Top menos sitios con conexiones outgoing'
-        }
-    })
 
 
 #----------------------------------------Grafos---------------------------------------------------------
@@ -1396,8 +1398,6 @@ def generarArchivosJSONGrafoTopOutgoing(param=10):
     # Estos X elementos son los sitios web con la mayor cantidad de conexiones salientes (outgoing connections). Luego, esta información se guarda en un 
     # DataFrame llamado top_outgoing.
 
-
-
     top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
 
     # DataFrame df_links y top_outgoing deben estar previamente definidos
@@ -1452,6 +1452,7 @@ def generarArchivosJSONGrafoTopOutgoing(param=10):
         "aristas": edges_json
       }
     })
+
 #+++++++++++++++++++++++++++++++++++++++++++ ANALISIS DE DATOS CON SpaCy ++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
