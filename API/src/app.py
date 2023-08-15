@@ -188,6 +188,19 @@ def obtenerGraficasEstaticas():
 
   return json_resultados
 
+@app.route("/obtenerGraficasDinamicas")
+def obtenerGraficasDinamicas():
+  json_fuente_sitios = [analisisIdiomaGoogle(), analisisIdiomaNLTK(), analisisTopPaginas(), topSitiosConexionesSalientes(), topSitiosIncoming(), topSitiosMenosIncoming(),
+                        topSitiosMenosOutgoing()]
+    
+  json_resultados = []
+
+  for json_data in json_fuente_sitios:
+      contenido_deseado = json_data.get_json()
+      json_resultados.append(contenido_deseado)
+
+  return {"obtenerGraficasDinamicas":json_resultados}
+
 @app.route("/obtenerTablas")
 def obtenerTablas():
   json_fuente_sitios = [getTopPaginas(), sitiosMayorIntentosDescubrimiento(), analisisMayorNumeroPalabras(), analisisSitiosMayorNumeroImagenes(), mayorNumeroOutgoing(),

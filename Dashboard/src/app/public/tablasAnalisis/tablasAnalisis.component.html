@@ -5,9 +5,13 @@
       <form class="example-form">
         <mat-form-field>
           <mat-label>Ingrese cuantos registros mostrar</mat-label>
-          <input matInput [id]="'inputField' + i">
+          <input matInput [id]="'inputField' + i" [formControl]="cantidadRegistrosControls[i]">
+          <mat-error *ngIf="cantidadRegistrosControls[i].hasError('pattern')">
+            Ingrese solo dígitos.
+          </mat-error>
         </mat-form-field>
-        <button type="submit" mat-button (click)="pedirDatos(i)">Mostrar Registros</button>
+
+        <button type="submit" mat-button (click)="pedirDatos(i)" [disabled]="cantidadRegistrosControls[i].hasError('pattern') || booleanServices.getShowProgressBar()">Mostrar Registros</button>
       </form>
     </div>
     <div class="mat-elevation-z8">

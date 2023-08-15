@@ -1,5 +1,6 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { AfterViewInit, Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -23,8 +24,11 @@ export class TablasAnalisisComponent implements OnInit, AfterViewInit {
   titulos: string[] = [];
 
   metodos: string [] = [];
+  cantidadRegistrosControls: FormControl[] = [];
 
-  constructor(private _liveAnnouncer: LiveAnnouncer, protected mensajesService: MensajesService, protected restService: RestService, protected booleanServices: BooleanServices) {}
+  constructor(private _liveAnnouncer: LiveAnnouncer, protected mensajesService: MensajesService, protected restService: RestService, protected booleanServices: BooleanServices) {
+
+  }
 
   @ViewChild(MatSort) sort: MatSort;
 
@@ -63,6 +67,7 @@ export class TablasAnalisisComponent implements OnInit, AfterViewInit {
 
           this.dataSources.forEach((dataSource) => {
             dataSource.sort = this.sort;
+            this.cantidadRegistrosControls.push(new FormControl('', [Validators.pattern('^[0-9]*$')]));
           });
 
           this.mensajesService.sendMessage("Mostrando " + this.dataSources.length + " tablas", TipoMensaje.CORRECTO, 3500)
@@ -102,7 +107,7 @@ export class TablasAnalisisComponent implements OnInit, AfterViewInit {
       },
       error: (error) => {
         this.booleanServices.updateProgressBar(false);
-        this.mensajesService.sendMessage(error.message, TipoMensaje.ERROR);
+        this.mensajesService.sendMessage(error.message, TipoMensaje.ERROR, 5000);
       }
     });
   }
