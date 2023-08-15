@@ -1,8 +1,16 @@
 <ng-container *ngFor="let item of dataSources; let i =index">
   <section class="contenedor-tabla">
-    <h1>{{titulos[i]}}</h1>
+    <div class="contenedor-cabecera-tabla">
+      <h1>{{titulos[i]}}</h1>
+      <form class="example-form">
+        <mat-form-field>
+          <mat-label>Ingrese cuantos registros mostrar</mat-label>
+          <input matInput [id]="'inputField' + i">
+        </mat-form-field>
+        <button type="submit" mat-button (click)="pedirDatos(i)">Mostrar Registros</button>
+      </form>
+    </div>
     <div class="mat-elevation-z8">
-
       <table mat-table [dataSource]="dataSources[i]" matSort (matSortChange)="announceSortChange($event)">
         <div class="tabla-contenedor"  #tablaContenedor>
 

@@ -196,7 +196,7 @@ def obtenerTablas():
   json_resultados = []
 
   for json_data in json_fuente_sitios:
-      contenido_deseado = quitarResponseJSON(json_data.get_json())
+      contenido_deseado = json_data.get_json()
       json_resultados.append(contenido_deseado)
 
   return {"obtenerTablasResponse":json_resultados}

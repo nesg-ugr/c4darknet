@@ -22,6 +22,8 @@ export class TablasAnalisisComponent implements OnInit, AfterViewInit {
   cargado: boolean = false;
   titulos: string[] = [];
 
+  metodos: string [] = [];
+
   constructor(private _liveAnnouncer: LiveAnnouncer, protected mensajesService: MensajesService, protected restService: RestService, protected booleanServices: BooleanServices) {}
 
   @ViewChild(MatSort) sort: MatSort;
@@ -38,18 +40,22 @@ export class TablasAnalisisComponent implements OnInit, AfterViewInit {
         if (response ) {
 
           response.obtenerTablasResponse.forEach((element: any) => {
-            this.titulos.push(element.titulo)
+
             // Obtener las claves excluyendo "titulo"
-            const keysExcludingTitulo = Object.keys(element).filter(key => key !== 'titulo');
+            let metodo = Object.keys(element).toString();
+            this.titulos.push(element[metodo].titulo);
+
+            const keysExcludingTitulo = Object.keys(element[metodo]).filter(key => key !== 'titulo');
 
             let columns = ['position'];
-            columns.push(...Object.keys(element[keysExcludingTitulo[0]][0]))
-
+            columns.push(...Object.keys(element[metodo][keysExcludingTitulo[0]][0]))
             this.displayedColumns.push(columns);
 
-            console.log(this.displayedColumns)
+            this.dataSources.push(new MatTableDataSource(element[metodo][keysExcludingTitulo[0]]));
 
-            this.dataSources.push(new MatTableDataSource(element[keysExcludingTitulo[0]]));
+            metodo = metodo.replace('Response', '');
+            this.metodos.push(metodo);
+
           });
 
           this.booleanServices.updateProgressBar(false);
@@ -59,9 +65,39 @@ export class TablasAnalisisComponent implements OnInit, AfterViewInit {
             dataSource.sort = this.sort;
           });
 
-
-
           this.mensajesService.sendMessage("Mostrando " + this.dataSources.length + " tablas", TipoMensaje.CORRECTO, 3500)
+        }
+      },
+      error: (error) => {
+        this.booleanServices.updateProgressBar(false);
+        this.mensajesService.sendMessage(error.message, TipoMensaje.ERROR);
+      }
+    });
+  }
+
+  pedirDatos(index: number){
+    this.mensajesService.sendMessage("Actualizando tabla", TipoMensaje.INFO);
+    this.booleanServices.updateProgressBar(true);
+
+    const inputField = document.getElementById('inputField'+index) as HTMLInputElement;
+    const valor = inputField.value;
+
+    this.restService.get(this.metodos[index]+'/'+valor).subscribe({
+      next: (response) => {
+        if (response ) {
+
+          const keysExcludingTitulo = Object.keys(response[this.metodos[index]+'Response']).filter(key => key !== 'titulo');
+
+          this.dataSources[index]= new MatTableDataSource(response[this.metodos[index]+'Response'][keysExcludingTitulo[0]]);
+
+          this.booleanServices.updateProgressBar(false);
+          this.cargado = true;
+
+          this.dataSources.forEach((dataSource) => {
+            dataSource.sort = this.sort;
+          });
+
+          this.mensajesService.sendMessage("Tabla " + this.titulos[index] + " actualizada", TipoMensaje.CORRECTO, 5000)
         }
       },
       error: (error) => {

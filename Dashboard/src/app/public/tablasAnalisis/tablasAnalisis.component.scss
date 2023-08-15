@@ -83,6 +83,14 @@ td p, th p {
   justify-content: center;
 }
 
+.contenedor-cabecera-tabla{
+  display: flex;
+  justify-content: space-between;
+  mat-form-field{
+    width: 18em;
+  }
+}
+
 .left-align {
   text-align: left !important;
 }
