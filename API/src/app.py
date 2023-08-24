@@ -71,7 +71,7 @@ ms=10
 #-----------------------------GLOBALES----------------------------------------------
 
 logprocessing_limit = 1000000
-engine = create_engine('mysql+pymysql://phpmyadmin:Juanmitigre99!@localhost:'+'3306'+'/freenet_database', echo=False)
+engine = create_engine('mysql+pymysql://phpmyadmin:Abcd1234!@localhost:'+'3306'+'/freenet_database', echo=False)
 df_site = pd.read_sql_query('select * from site', engine)
 df_status = pd.read_sql_query('select * from sitestatus', engine)
 df_source = pd.read_sql_query('select * from sitesource', engine)
