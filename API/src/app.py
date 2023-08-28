@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime, timedelta
 
 import gzip
 import json
@@ -69,6 +70,8 @@ lw=5
 ms=10
 
 #-----------------------------GLOBALES----------------------------------------------
+
+
 
 logprocessing_limit = 1000000
 engine = create_engine('mysql+pymysql://phpmyadmin:Abcd1234!@localhost:'+'3306'+'/freenet_database', echo=False)
@@ -148,6 +151,109 @@ df_site_home_lan = df_site_home.merge(df_language[df_language['engine'] == 'GOOG
 df_site_home_lan['illicit_category'] = ""
 df_site_home_lan['illicit_value'] = 0
 
+def actualizarValoresBD():
+    global ultima_actualizacion
+    df_site = pd.read_sql_query('select * from site', engine)
+    df_status = pd.read_sql_query('select * from sitestatus', engine)
+    df_source = pd.read_sql_query('select * from sitesource', engine)
+    df_logprocessing = pd.read_sql_query('select * from siteprocessinglog limit ' + str(logprocessing_limit), engine)
+    df_language = pd.read_sql_query('select sitelanguage.* from sitelanguage', engine)
+    df_sitehomeinfo = pd.read_sql_query('select sitehomeinfo.* from sitehomeinfo', engine)
+    df_connectivity = pd.read_sql_query('select siteconnectivitysummary.* from siteconnectivitysummary', engine)
+    df_src_link = pd.read_sql_query('select link_site.* from link_site', engine)
+    df_dst_link = pd.read_sql_query('select link_site_2.* from link_site_2', engine)
+
+    # Agregamos el dato de la duracion, en minutos, que seria la diferencia entre la fecha de inicio y la de fin
+    df_site['duration'] = (df_site['timestamp_s'] - df_site['timestamp']).apply(lambda x:x.total_seconds()/60)
+
+    #Agregamos una abreviatura para los sitios de freenet
+    df_site['abbr'] = df_site['name']
+    for i in range(0, len(df_site.index)):
+        name = df_site['abbr'][i]
+        
+        #Comprobamos si acaba en barra
+        if name[-1] == "/":
+            name = name[:-1]
+        #Comprobamos si es USK o SSK
+        is_usk = False
+        if "USK@" in name:
+            is_usk = True
+        
+        #Seleccionamos lo de despues del arroba
+        name = name.split("@", 1)[1]
+
+        if is_usk:
+            name = name.rsplit("/", 1)[0]
+            name = name.split("/", 1)[1]
+        else:
+            if "/" in name:
+                name = name.split("/", 1)[1]
+            
+        #df_site['abbr'][i] = name
+        df_site.at[i, 'abbr'] = name
+
+    # Agregamos la informacion del estado del sitio
+    df_site_status = df_site.merge(df_status,left_on='current_status',right_on='id')
+    df_site_status = df_site_status.drop(labels=['type_x','id_y','description','current_status'],axis=1)
+    df_site_status=df_site_status.rename(columns={'type_y':'status'})
+
+    # Agregamos la infromacion de la fuente del sitio
+    df_site_source = df_site.merge(df_source,left_on='source',right_on='id')
+    df_site_source = df_site_source.drop(labels=['type_x','id_y','description','source'],axis=1)
+    df_site_source=df_site_source.rename(columns={'type_y':'source'})
+
+    # Unimos ambas informaciones en un mismo lugar
+    df_site_source_status = df_site_source.merge(df_status,left_on='current_status',right_on='id')
+    df_site_source_status = df_site_source_status.drop(labels=['id','current_status','description'],axis=1)
+    df_site_source_status = df_site_source_status.rename(columns={'type':'current_status', 'id_x':'id'})
+
+    #Unimos la informacion del sitio con las de la conectividad
+    df_site_conn = df_site_source_status.merge(df_connectivity,left_on='id',right_on='site')
+    df_site_conn = df_site_conn.drop(labels=['id_x','id_y','pages_x'],axis=1)
+    df_site_conn = df_site_conn.rename(columns={'pages_y':'pages'})
+
+    #Unimos la conectividad de los nodos para los grafos
+    df_links = df_src_link.merge(df_dst_link,left_on='link',right_on='link')
+    df_links = df_links.rename(columns={'site_x':'Source','site_y':'Target','link':'Label'})
+
+    #Unimos los site con la info de home
+    df_site_home = df_site.merge(df_sitehomeinfo,left_on='id',right_on='site')
+    df_site_home = df_site_home.drop(labels=['id_x','id_y'],axis=1)
+
+    #Unimos los sites con la info del home con el lenguaje
+    df_site_home_lan = df_site_home.merge(df_language[df_language['engine'] == 'GOOGLE'],left_on='site',right_on='site')
+    #Le agregamos una columna mas que usaremos para el analisis de los datos
+    df_site_home_lan['illicit_category'] = ""
+    df_site_home_lan['illicit_value'] = 0
+
+
+    # Actualizar el tiempo de la última actualización
+    ultima_actualizacion = datetime.now()
+    print('Actualizamos cache')
+
+
+
+
+
+
+
+
+
+#Definimos cuando se ha actualizado la cache por ultima vez
+ultima_actualizacion = datetime.now()
+tiempo_siguiente_actualizacion_cache =  timedelta(minutes=10)
+
+def shouldRefresh():
+    global ultima_actualizacion
+    global tiempo_siguiente_actualizacion_cache
+
+        # Si la última actualización es None o han pasado más de 10 minutos
+    if ultima_actualizacion is None or datetime.now() - ultima_actualizacion >= tiempo_siguiente_actualizacion_cache:
+        actualizarValoresBD()
+
+
+
+
 #----------------------------------------Métodos---------------------------------------------------------
 
 def obtenerImagenBase64(plt,fig=None):
@@ -174,8 +280,11 @@ def quitarResponseJSON(json_data):
 
 @app.route("/obtenerGraficasEstaticas")
 def obtenerGraficasEstaticas():
+  shouldRefresh()
+
+
   json_fuente_sitios = [getDistFuenteSitios(), getFuenteSitiosActivos(), getDistSitiosPorEstado(), getEvolucionTempSitiosProcesados(), getEvolucionTempSitiosCrawleados(),
-                        getComparacionCrawleadosFirstDayLastDay(), getHistogramaIntentosDescubrimientos(), analisisIdiomaGoogle(), analisisIdiomaNLTK(), analisisNumeroPaginas(),
+                        getComparacionCrawleadosFirstDayLastDay(), getHistogramaIntentosDescubrimientos(), analisisNumeroPaginas(),
                         analisisTiempoCrawleo(), analisisRelacionDuracionPaginas(), analisisRelacionDuracionIntentos(), analisisPaginaPrincipal(), analisisNumeroPalabras(),
                         analisisScriptsSitios(), analisisNumeroImagenes(), analisisConectividadSaliente(), analisisEnlacesSalientes(), analisisRelacionPaginasOutgoing(),
                         analisisNodosEntrantes(), analisisIncoming(), analisisSitiosAislados()]
@@ -190,6 +299,9 @@ def obtenerGraficasEstaticas():
 
 @app.route("/obtenerGraficasDinamicas")
 def obtenerGraficasDinamicas():
+
+  shouldRefresh()
+    
   json_fuente_sitios = [analisisIdiomaGoogle(), analisisIdiomaNLTK(), analisisTopPaginas()]
     
   json_resultados = []
@@ -202,6 +314,9 @@ def obtenerGraficasDinamicas():
 
 @app.route("/obtenerTablas")
 def obtenerTablas():
+
+  shouldRefresh()
+
   json_fuente_sitios = [getTopPaginas(), sitiosMayorIntentosDescubrimiento(), analisisMayorNumeroPalabras(), analisisSitiosMayorNumeroImagenes(), mayorNumeroOutgoing(),
                         topSitiosConexionesEntrantes(), sitiosMenorNumeroOutgoing(), sitiosMenorNumeroIncoming(), topSitiosConexionesSalientes(), topSitiosIncoming(), topSitiosMenosIncoming(),
                         topSitiosMenosOutgoing()]
@@ -223,6 +338,9 @@ def index():
 #----------------------------------------Graficas estaticas---------------------------------------------------------
 @app.route("/getFuenteSitios") #en general
 def getDistFuenteSitios():
+
+    shouldRefresh()
+
     # Vemos la fuente de los sitios en general
     total_all_source = df_site_source_status['source'].value_counts()
 
@@ -250,6 +368,8 @@ def getDistFuenteSitios():
 
 @app.route("/getFuenteSitiosActivos")
 def getFuenteSitiosActivos():
+    shouldRefresh()
+
     # Vemos la fuente de los sitios activos
     df_site_active = df_site_source_status[df_site_source_status['current_status'] == 'FINISHED']
     total_active_source = df_site_active['source'].value_counts()
@@ -278,6 +398,8 @@ def getFuenteSitiosActivos():
 
 @app.route("/getDistSitiosPorEstado")
 def getDistSitiosPorEstado():
+    shouldRefresh()
+
     # Vemos la distribución de sitios por estado
     total_status_sites = df_site_status['status'].value_counts()
 
@@ -306,6 +428,8 @@ def getDistSitiosPorEstado():
 
 @app.route("/getEvolucionTempSitiosProcesados")
 def getEvolucionTempSitiosProcesados():
+    shouldRefresh()
+
     # Evolucion temporal de los sitios procesados
     df_ss_analysis = df_site_source_status.copy()
     df_ss_analysis['timestamp'] = pd.to_datetime(df_ss_analysis['timestamp'])
@@ -356,6 +480,8 @@ def getEvolucionTempSitiosProcesados():
 
 @app.route("/getEvolucionTempSitiosCrawleados")
 def getEvolucionTempSitiosCrawleados():
+    shouldRefresh()
+
     # Evolucion temporal de los sitios crawleados
     df_ss_analysis = df_site_source_status.copy()
     df_ss_analysis['timestamp_s'] = pd.to_datetime(df_ss_analysis['timestamp_s'])
@@ -402,6 +528,8 @@ def getEvolucionTempSitiosCrawleados():
 # Ruta para obtener la comparación del número de sitios crawleados tras el primer día y al finalizar
 @app.route("/getComparacionCrawleadosFirstDayLastDay")
 def getComparacionCrawleadosFirstDayLastDay():
+    shouldRefresh()
+
 
     # Evolucion temporal de los sitios crawleados
     df_ss_analysis = df_site_source_status.copy()
@@ -456,6 +584,8 @@ def getComparacionCrawleadosFirstDayLastDay():
 # Ruta para obtener el histograma de intentos de descubrimientos de sitios crawleados
 @app.route("/getHistogramaIntentosDescubrimientos")
 def getHistogramaIntentosDescubrimientos():
+    shouldRefresh()
+
     # Intentos de descubrimientos de los sitios crawleados
     df_ss_analysis = df_site_source_status.copy()
     df_ss_analysis['timestamp_s'] = pd.to_datetime(df_ss_analysis['timestamp_s'])
@@ -499,6 +629,8 @@ def getHistogramaIntentosDescubrimientos():
 # Ruta para realizar el análisis del tiempo que tarda en crawlear los sitios
 @app.route("/analisisTiempoCrawleo")
 def analisisTiempoCrawleo():
+    shouldRefresh()
+
     total_in_status = df_site_status[df_site_status['status'] == 'FINISHED']['duration'].count()
     duration_crawled_sites = df_site_status[df_site_status['status'] == 'FINISHED']['duration']
 
@@ -528,6 +660,8 @@ def analisisTiempoCrawleo():
 # Ruta para realizar el análisis de la relación entre duración y número de páginas
 @app.route("/analisisRelacionDuracionPaginas")
 def analisisRelacionDuracionPaginas():
+    shouldRefresh()
+
     pages_duration = df_site_status[df_site_status['status'] == 'FINISHED'][['pages', 'duration']]
 
     # Creamos el gráfico de dispersión
@@ -556,6 +690,8 @@ def analisisRelacionDuracionPaginas():
 # Ruta para realizar el análisis de la relación entre duración e intentos de descubrimiento
 @app.route("/analisisRelacionDuracionIntentos")
 def analisisRelacionDuracionIntentos():
+    shouldRefresh()
+
     discovering_duration = df_site_status[df_site_status['status'] == 'FINISHED'][['discovering_tries', 'duration']]
 
     # Creamos el gráfico de dispersión
@@ -584,6 +720,8 @@ def analisisRelacionDuracionIntentos():
 # Ruta para realizar el análisis de la página principal
 @app.route("/analisisPaginaPrincipal")
 def analisisPaginaPrincipal():
+    shouldRefresh()
+
     words_home = df_sitehomeinfo['words']
     images_home = df_sitehomeinfo['images']
     scripts_home = df_sitehomeinfo['scripts']
@@ -620,6 +758,8 @@ def analisisPaginaPrincipal():
 # Ruta para realizar el análisis del número de palabras en los sitios
 @app.route("/analisisNumeroPalabras")
 def analisisNumeroPalabras():
+    shouldRefresh()
+
     words_home = df_sitehomeinfo['words']
     plt.figure(figsize=(15, 8))
     ax = words_home.hist(bins=100, xlabelsize=18, ylabelsize=18)
@@ -646,6 +786,8 @@ def analisisNumeroPalabras():
 # Ruta para realizar el análisis de scripts en los sitios
 @app.route("/analisisScriptsSitios")
 def analisisScriptsSitios():
+    shouldRefresh()
+
     scripts_home = df_sitehomeinfo['scripts']
     plt.figure(figsize=(15, 8))
     ax = scripts_home.hist(bins=5, figsize=(15,8), range=[0, 5])
@@ -672,6 +814,8 @@ def analisisScriptsSitios():
 # Ruta para realizar el análisis del número de imágenes en los sitios
 @app.route("/analisisNumeroImagenes")
 def analisisNumeroImagenes():
+    shouldRefresh()
+
     images_home = df_sitehomeinfo['images']
     plt.figure(figsize=(15, 8))
     ax = images_home.hist(bins=150, figsize=(15,8))
@@ -697,6 +841,8 @@ def analisisNumeroImagenes():
 # Ruta para realizar el análisis de la conectividad saliente (outgoing)
 @app.route("/analisisConectividadSaliente")
 def analisisConectividadSaliente():
+    shouldRefresh()
+
     outgoing = df_connectivity['outgoing']
 
     # Obtener valores y porcentajes de conectividad saliente
@@ -731,6 +877,8 @@ def analisisConectividadSaliente():
 # Ruta para realizar el análisis de enlaces salientes sin contar los que tienen 0 outgoing
 @app.route("/analisisEnlacesSalientes")
 def analisisEnlacesSalientes():
+    shouldRefresh()
+
 
     outgoing = df_connectivity['outgoing']
 
@@ -770,6 +918,8 @@ def analisisEnlacesSalientes():
 # Ruta para realizar el análisis de la relación entre el número de páginas y outgoing
 @app.route("/analisisRelacionPaginasOutgoing")
 def analisisRelacionPaginasOutgoing():
+    shouldRefresh()
+
     pages_outgoing = pd.concat([df_site_conn['pages'], df_site_conn['outgoing']], axis=1)
 
     # Creamos el gráfico de dispersión
@@ -804,6 +954,8 @@ def analisisRelacionPaginasOutgoing():
 # Ruta para realizar el análisis de los nodos entrantes (incoming)
 @app.route("/analisisNodosEntrantes")
 def analisisNodosEntrantes():
+    shouldRefresh()
+
     incoming = df_connectivity['incoming']
 
     # Obtener valores y porcentajes de incoming
@@ -837,6 +989,8 @@ def analisisNodosEntrantes():
 # Ruta para realizar el análisis de la cantidad de sitios entrantes sin contar los que tienen 0 incoming
 @app.route("/analisisIncoming")
 def analisisIncoming():
+    shouldRefresh()
+
     incoming_nozero = df_connectivity[df_connectivity['incoming'] > 1]['incoming']
 
     # Creamos el histograma de la cantidad de sitios entrantes sin contar los que tienen 0 incoming
@@ -865,6 +1019,8 @@ def analisisIncoming():
 # Ruta para realizar el análisis de sitios aislados y su conectividad
 @app.route("/analisisSitiosAislados")
 def analisisSitiosAislados():
+    shouldRefresh()
+
     isolate_sites = df_site_conn[(df_site_conn['incoming'] <= 1) & (df_site_conn['outgoing'] == 0)]['name'].count()
     some_conn = df_site_conn[(df_site_conn['incoming'] > 1) | (df_site_conn['outgoing'] > 0)]['name'].count()
     compl_conn = df_site_conn[(df_site_conn['incoming'] > 1) & (df_site_conn['outgoing'] > 0)]['name'].count()
@@ -896,6 +1052,8 @@ def analisisSitiosAislados():
 # Ruta para realizar el análisis del número de páginas en los sitios crawleados
 @app.route("/analisisNumeroPaginas")
 def analisisNumeroPaginas():
+    shouldRefresh()
+
     total_in_status = df_site_status[df_site_status['status'] == 'FINISHED']['pages'].count()
     value_count_pagescrawledsites = df_site_status[df_site_status['status'] == 'FINISHED']['pages'].value_counts()
 
@@ -945,6 +1103,8 @@ def analisisNumeroPaginas():
 @app.route("/getTopPaginas/<int:param>")
 @app.route("/getTopPaginas")
 def getTopPaginas(param=5):
+    shouldRefresh()
+
     # Obtener el top de sitios con el mayor número de páginas
     top_pages = df_site.sort_values(by=['pages'], ascending=False).head(param).reset_index(drop=True)
 
@@ -963,6 +1123,8 @@ def getTopPaginas(param=5):
 @app.route("/sitiosMayorIntentosDescubrimiento/<int:param>")
 @app.route("/sitiosMayorIntentosDescubrimiento")
 def sitiosMayorIntentosDescubrimiento(param=5):
+    shouldRefresh()
+
     # Obtener los sitios con mayor número de intentos de descubrimiento
     top_trydiscovering = df_site_home.sort_values(by=['discovering_tries'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
 
@@ -983,6 +1145,8 @@ def sitiosMayorIntentosDescubrimiento(param=5):
 @app.route("/analisisMayorNumeroPalabras/<int:param>")
 @app.route("/analisisMayorNumeroPalabras")
 def analisisMayorNumeroPalabras(param=5):
+    shouldRefresh()
+
     # Ordenar el DataFrame por mayor número de palabras y obtener los 5 sitios principales
     top_words = df_site_home.sort_values(by=['words'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
 
@@ -1002,6 +1166,8 @@ def analisisMayorNumeroPalabras(param=5):
 @app.route("/analisisSitiosMayorNumeroImagenes/<int:param>")
 @app.route("/analisisSitiosMayorNumeroImagenes")
 def analisisSitiosMayorNumeroImagenes(param=5):
+    shouldRefresh()
+
     # Obtener los sitios con el mayor número de imágenes
     top_images = df_site_home.sort_values(by=['images'], ascending=False).head(param).reset_index(drop=True)[['name', 'error_tries', 'discovering_tries', 'pages', 'duration', 'abbr', 'letters', 'words', 'images', 'title', 'site']]
 
@@ -1022,6 +1188,8 @@ def analisisSitiosMayorNumeroImagenes(param=5):
 @app.route("/mayorNumeroOutgoing/<int:param>")
 @app.route("/mayorNumeroOutgoing")
 def mayorNumeroOutgoing(param=5):
+    shouldRefresh()
+
     # Obtener el top 5 de conexiones salientes (outgoing)
     top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
 
@@ -1042,6 +1210,8 @@ def mayorNumeroOutgoing(param=5):
 @app.route("/topSitiosConexionesEntrantes/<int:param>")
 @app.route("/topSitiosConexionesEntrantes")
 def topSitiosConexionesEntrantes(param=5):
+    shouldRefresh()
+
     top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
 
     # Convertir el DataFrame a un formato JSON
@@ -1060,6 +1230,8 @@ def topSitiosConexionesEntrantes(param=5):
 @app.route("/sitiosMenorNumeroOutgoing/<int:param>")
 @app.route("/sitiosMenorNumeroOutgoing")
 def sitiosMenorNumeroOutgoing(param=5):
+    shouldRefresh()
+
     # Obtener los 5 sitios con el menor número de conexiones entrantes
     bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(param).reset_index(drop=True)
 
@@ -1079,6 +1251,8 @@ def sitiosMenorNumeroOutgoing(param=5):
 @app.route("/sitiosMenorNumeroIncoming/<int:param>")
 @app.route("/sitiosMenorNumeroIncoming")
 def sitiosMenorNumeroIncoming(param=5):
+    shouldRefresh()
+
     # Obtener los 5 sitios con el menor número de conexiones entrantes
     bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(param).reset_index(drop=True)
 
@@ -1097,6 +1271,8 @@ def sitiosMenorNumeroIncoming(param=5):
 @app.route("/topSitiosConexionesSalientes/<int:param>")
 @app.route("/topSitiosConexionesSalientes")
 def topSitiosConexionesSalientes(param=10):
+    shouldRefresh()
+
     top_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=False).head(param).reset_index(drop=True)
     
     # Convertir el DataFrame a un diccionario para el formato JSON
@@ -1113,6 +1289,8 @@ def topSitiosConexionesSalientes(param=10):
 @app.route("/topSitiosIncoming/<int:param>")
 @app.route("/topSitiosIncoming")
 def topSitiosIncoming(param=10):
+    shouldRefresh()
+
     top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
     top_incoming_json = top_incoming.to_dict(orient="records")
     
@@ -1127,6 +1305,8 @@ def topSitiosIncoming(param=10):
 @app.route("/topSitiosMenosIncoming/<int:param>")
 @app.route("/topSitiosMenosIncoming")
 def topSitiosMenosIncoming(param=10):
+    shouldRefresh()
+
     bottom_incoming = df_site_conn.sort_values(by=['incoming'], ascending=True).head(param).reset_index(drop=True)
 
     # Convertir el DataFrame en una lista de diccionarios
@@ -1143,6 +1323,8 @@ def topSitiosMenosIncoming(param=10):
 @app.route("/topSitiosMenosOutgoing/<int:param>")
 @app.route("/topSitiosMenosOutgoing")
 def topSitiosMenosOutgoing(param=10):
+    shouldRefresh()
+
     bottom_outgoing = df_site_conn.sort_values(by=['outgoing'], ascending=True).head(param).reset_index(drop=True)
 
     # Convertir el DataFrame en una lista de diccionarios
@@ -1165,6 +1347,8 @@ def topSitiosMenosOutgoing(param=10):
 @app.route("/analisisIdiomaGoogle/<int:param>")
 @app.route("/analisisIdiomaGoogle")
 def analisisIdiomaGoogle(param=7):
+    shouldRefresh()
+
     language_google = df_language[df_language['engine'] == 'GOOGLE']['language']
     language_google = language_google.replace('', 'undefined')
     language_google_count = language_google.value_counts()
@@ -1208,6 +1392,8 @@ def analisisIdiomaGoogle(param=7):
 @app.route("/analisisIdiomaNLTK/<int:param>")
 @app.route("/analisisIdiomaNLTK")
 def analisisIdiomaNLTK(param = 7):
+    shouldRefresh()
+
     language_nltk = df_language[df_language['engine'] == 'NLTK']['language']
     language_nltk_count = language_nltk.value_counts()
 
@@ -1250,6 +1436,8 @@ def analisisIdiomaNLTK(param = 7):
 @app.route("/analisisTopPaginas/<int:param>")
 @app.route("/analisisTopPaginas")
 def analisisTopPaginas(param=5):
+    shouldRefresh()
+
     top_pages = df_site_status[df_site_status['status'] == 'FINISHED'][['abbr', 'pages', 'name']]
     top_pages = top_pages.sort_values(by=['pages'], ascending=False).head(param)
 
@@ -1287,6 +1475,8 @@ def analisisTopPaginas(param=5):
 # Ruta para obtener la información de nodos y aristas en formato JSON
 @app.route("/generarArchivosJSONGrafoCompleto")
 def generarArchivosJSONGrafoCompleto():
+    shouldRefresh()
+
     
     df_nodes = df_site[['id','abbr']]
 
@@ -1317,6 +1507,8 @@ def generarArchivosJSONGrafoCompleto():
 # Ruta para obtener los archivos CSV comprimidos en JSON
 @app.route("/getCompressedCSVs")
 def getCompressedCSVs():
+    shouldRefresh()
+
     # Crear los DataFrames de ejemplo (reemplazar con tus propios DataFrames)
     
     df_nodes = df_site[['id','abbr']]
@@ -1346,6 +1538,8 @@ def getCompressedCSVs():
 @app.route("/generarArchivosJSONGrafoTopIncoming/<int:param>")
 @app.route("/generarArchivosJSONGrafoTopIncoming")
 def generarArchivosJSONGrafoTopIncoming(param=10):
+    shouldRefresh()
+
     top_incoming = df_site_conn.sort_values(by=['incoming'], ascending=False).head(param).reset_index(drop=True)
     df_links_topincoming = pd.DataFrame()
 
@@ -1393,6 +1587,8 @@ def generarArchivosJSONGrafoTopIncoming(param=10):
 @app.route("/generarArchivosJSONGrafoTopOutgoing/<int:param>")
 @app.route("/generarArchivosJSONGrafoTopOutgoing")
 def generarArchivosJSONGrafoTopOutgoing(param=10):
+    shouldRefresh()
+
     # Ordenar el DataFrame: Primero, el código asume que hay un DataFrame llamado df_site_conn que contiene información sobre la conexión de sitios web. 
     # La función ordena este DataFrame en función de la columna 'outgoing' de manera descendente (mayor a menor) y selecciona los primeros 10 elementos. 
     # Estos X elementos son los sitios web con la mayor cantidad de conexiones salientes (outgoing connections). Luego, esta información se guarda en un 
