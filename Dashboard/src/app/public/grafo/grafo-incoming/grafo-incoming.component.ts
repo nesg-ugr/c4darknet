@@ -54,12 +54,12 @@ export class GrafoIncomingComponent extends GrafoComponent implements OnInit {
     const inputField = document.getElementById('inputField') as HTMLInputElement;
     const valor = inputField.value;
 
-    this.restService.get('generarArchivosJSONGrafoTopOutgoing/'+valor).subscribe({
+    this.restService.get('generarArchivosJSONGrafoTopIncoming/'+valor).subscribe({
       next: (response) => {
-        if (response.generarArchivosJSONGrafoTopOutgoingResponse != undefined)
+        if (response.generarArchivosJSONGrafoTopIncomingResponse != undefined)
         {
-          this.nodes = response.generarArchivosJSONGrafoTopOutgoingResponse.nodos;
-          this.links = response.generarArchivosJSONGrafoTopOutgoingResponse.aristas;
+          this.nodes = response.generarArchivosJSONGrafoTopIncomingResponse.nodos;
+          this.links = response.generarArchivosJSONGrafoTopIncomingResponse.aristas;
 
           this.nodes = this.nodes.map(node => ({ ...node, color: this.randomColor() }));
         }
