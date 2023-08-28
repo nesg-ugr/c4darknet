@@ -1,14 +1,12 @@
 h1{
-  position: relative;
-  left: 40%;
-  margin: 2em;
-  padding: 0;
-  right: 50%;
-  width: 14em;
+  margin: 1em 0 ;
 }
 p{
-  position: relative;
-  left: 35%;
   width: 43em;
   text-align: center;
+}
+section{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

@@ -1504,6 +1504,28 @@ def generarArchivosJSONGrafoCompleto():
 
     return jsonify({"json_comprimido": encoded_data})
 
+# Ruta para obtener la información de nodos y aristas en formato JSON
+@app.route("/generarJSONGrafoCompleto")
+def generarJSONGrafoCompleto():
+    shouldRefresh()
+
+    
+    df_nodes = df_site[['id','abbr']]
+
+    # Crear diccionario de nodos y aristas
+    nodes_json = df_nodes.rename(columns={'site': 'id', 'abbr': 'label'}).to_dict(orient='records')
+    edges_json = df_links.rename(columns={'Label': 'id', 'Source': 'source', 'Target': 'target'}).to_dict(orient='records')
+
+    # Crear el JSON completo
+    json_data = {
+        "generarJSONGrafoCompletoResponse": {
+            "nodos": nodes_json,
+            "aristas": edges_json
+        }
+    }
+
+    return jsonify(json_data)
+
 # Ruta para obtener los archivos CSV comprimidos en JSON
 @app.route("/getCompressedCSVs")
 def getCompressedCSVs():
