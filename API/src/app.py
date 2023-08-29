@@ -151,6 +151,9 @@ df_site_home_lan = df_site_home.merge(df_language[df_language['engine'] == 'GOOG
 df_site_home_lan['illicit_category'] = ""
 df_site_home_lan['illicit_value'] = 0
 
+
+
+@app.route("/actualizarCache")
 def actualizarValoresBD():
     global ultima_actualizacion
     df_site = pd.read_sql_query('select * from site', engine)
@@ -230,6 +233,14 @@ def actualizarValoresBD():
     # Actualizar el tiempo de la última actualización
     ultima_actualizacion = datetime.now()
     print('Actualizamos cache')
+
+    return jsonify(
+        {
+            "actualizarCacheResponse": {
+                "status": "correcto"
+            }
+        }
+    )
 
 
 
@@ -328,6 +339,23 @@ def obtenerTablas():
       json_resultados.append(contenido_deseado)
 
   return {"obtenerTablasResponse":json_resultados}
+
+@app.route("/getTimer")
+def getTimer():
+    global tiempo_siguiente_actualizacion_cache
+    global ultima_actualizacion
+
+    time_left = datetime.now() - ultima_actualizacion
+
+    return jsonify(
+        {
+            "getTimerResponse": {
+                "timer": tiempo_siguiente_actualizacion_cache,
+                "time_left": time_left
+            }
+        }
+    )
+
 
 #----------------------------------------FLASK---------------------------------------------------------
 
