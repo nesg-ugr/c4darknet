@@ -25,6 +25,7 @@ import { GrafoCompletoComponent } from './grafo/grafo-completo/grafo-completo.co
 import { GraficasEstaticasComponent } from './graficasEstaticas/graficasEstaticas.component';
 import { GraficasDinamicasComponent } from './graficasDinamicas/graficasDinamicas.component';
 import { TablasAnalisisComponent } from './tablasAnalisis/tablasAnalisis.component';
+import { TemporizadorComponent } from './temporizador/temporizador.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { TablasAnalisisComponent } from './tablasAnalisis/tablasAnalisis.compone
     GrafoCompletoComponent,
     GraficasEstaticasComponent,
     GraficasDinamicasComponent,
-    TablasAnalisisComponent
+    TablasAnalisisComponent,
+    TemporizadorComponent
   ],
   imports: [
     CommonModule,
