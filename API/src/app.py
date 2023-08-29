@@ -345,15 +345,18 @@ def getTimer():
     global tiempo_siguiente_actualizacion_cache
     global ultima_actualizacion
 
-    time_left = datetime.now() - ultima_actualizacion
+    time_left = tiempo_siguiente_actualizacion_cache- (datetime.now() - ultima_actualizacion)
+
+    segundosSigAct = tiempo_siguiente_actualizacion_cache.seconds + (tiempo_siguiente_actualizacion_cache.microseconds / 1000000)
+    segundosTimeLeft = time_left.seconds + (time_left.microseconds / 1000000)
 
     return jsonify(
-        {
-            "getTimerResponse": {
-                "timer": tiempo_siguiente_actualizacion_cache,
-                "time_left": time_left
-            }
+      {
+        "getTimerResponse": {
+          "timer": segundosSigAct,
+          "time_left": segundosTimeLeft
         }
+      }
     )
 
 

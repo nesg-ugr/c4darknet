@@ -22,8 +22,9 @@ export class TemporizadorComponent implements OnInit {
     this.restService.get('getTimer').subscribe({
       next: (response) => {
         if (response.getTimerResponse) {
-          this.timer=response.getTimerResponse.timer;
-          this.countdown = response.getTimerResponse.time_left;
+
+          this.timer= Math.floor(response.getTimerResponse.timer);
+          this.countdown = Math.floor(response.getTimerResponse.time_left);
         }
       },
       error: (error) => {
@@ -61,9 +62,11 @@ export class TemporizadorComponent implements OnInit {
   }
 
   refrescarCache(){
+    this.mensajesService.sendMessage("Actualizando cache", TipoMensaje.INFO, 2500)
     this.restService.get('actualizarCache').subscribe({
       next: (response) => {
         if (response.actualizarCacheResponse.status = 'correcto') {
+          this.countdown = this.timer;
           this.mensajesService.sendMessage("Cache actualizada", TipoMensaje.INFO, 2500)
         }
       },
