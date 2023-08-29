@@ -22,7 +22,7 @@ HOST = 'localhost'
 USERNAME = 'phpmyadmin'
 
 #DB password
-PASSWORD = 'Juanmitigre99!'
+PASSWORD = 'Abcd1234!'
 
 #DB name
 DATABASE = 'freenet_database'

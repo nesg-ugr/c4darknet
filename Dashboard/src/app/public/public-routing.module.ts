@@ -14,9 +14,9 @@ const routes: Routes = [
   {
     path: '', component: PublicComponent, children:
     [
-      { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: '', redirectTo: 'tablas', pathMatch: 'full' },
       // { path: 'login',component: LoginComponent,  canActivate: [canActivate], data: { url:"login" }},
-      { path: 'home', component: HomeComponent },
+      // { path: 'home', component: HomeComponent },
       { path: 'graficas-estaticas', component: GraficasEstaticasComponent },
       { path: 'graficas-dinamicas', component: GraficasDinamicasComponent },
       { path: 'grafo-completo', component: GrafoCompletoComponent },

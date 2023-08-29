@@ -1,3 +1,15 @@
+<form class="example-form">
+  <mat-form-field>
+    <mat-label>Número de nodos</mat-label>
+    <input matInput [id]="'inputField'" [formControl]="cantidadRegistrosControls">
+    <mat-error *ngIf="cantidadRegistrosControls.hasError('pattern')">
+      Ingrese solo dígitos.
+    </mat-error>
+  </mat-form-field>
+
+  <button type="submit" mat-button (click)="pedirDatos()" [disabled]="cantidadRegistrosControls.hasError('pattern') || booleanServices.getShowProgressBar()">Enviar</button>
+</form>
+
 <ngx-graph [view]="view" [nodes]="nodes" [links]="links" [layout]="'dagre'" [layoutSettings]="layoutOptions" [showMiniMap]="true">
   <ng-template #nodeTemplate let-node>
     <svg:g class="node"
