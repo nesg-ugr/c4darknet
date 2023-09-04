@@ -1,0 +1,88 @@
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.icono_seccion {
+  vertical-align: -0.3125em;
+}
+
+.primerInput {
+  margin-left: 0;
+}
+
+.center-content {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  height: 100%;
+  width: 100%;
+}
+
+mat-form-field {
+  margin-right: 0.625em;
+}
+
+mat-table {
+  overflow: scroll;
+  border-radius: 0.3125em;
+  min-width: 50em;
+  margin: 0.5em;
+}
+
+mat-sidenav-container#sideNavContainer .mat-drawer-backdrop.mat-drawer-shown{
+  background-color: transparent;
+}
+
+/* Estilos personalizados para el scrollbar en todas las páginas */
+::-webkit-scrollbar {
+  width: 0.44em;
+  height: 0.44em;
+  background-color: inherit;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: grey;
+  border-radius: 6.25em;
+}
+//-------------------------------------------------------------------
+// Estilos para snack bar
+.mat-mdc-snack-bar-container {
+  &.correcto-snackbar {
+    --mdc-snackbar-container-color:#93fc93 !important;
+    --mat-mdc-snack-bar-button-color:  #fff !important;
+    // --mdc-snackbar-supporting-text-color: green !important;
+    --mdc-snackbar-supporting-text-weight: 1000;
+    --mdc-snackbar-supporting-text-color: black !important;
+  }
+}
+
+.mat-mdc-snack-bar-container {
+  &.warning-snackbar {
+    --mdc-snackbar-container-color: rgb(247, 247, 93) !important;
+    --mat-mdc-snack-bar-button-color: #fff !important;
+    --mdc-snackbar-supporting-text-weight: 1000;
+    --mdc-snackbar-supporting-text-color: black !important;
+  }
+}
+
+.mat-mdc-snack-bar-container {
+  &.error-snackbar {
+    --mdc-snackbar-container-color: rgb(252, 93, 93) !important;
+    --mat-mdc-snack-bar-button-color: #fff !important;
+    --mdc-snackbar-supporting-text-weight: 1000;
+    --mdc-snackbar-supporting-text-color: black !important;
+  }
+}
+
+.mat-mdc-snack-bar-container {
+  &.info-snackbar {
+    --mat-mdc-snack-bar-button-color: #fff !important;
+    --mdc-snackbar-supporting-text-weight: 1000;
+  }
+}

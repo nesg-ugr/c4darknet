@@ -1,0 +1,242 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.is-mobile .toolbar {
+  position: fixed;
+  /* Make sure the toolbar will stay on top of the content as it scrolls past. */
+  z-index: 2;
+}
+
+.sidenav-container {
+  /* When the sidenav is not fixed, stretch the sidenav container to fill the available space. This
+     causes `<mat-sidenav-content>` to act as our scrolling element for desktop layouts. */
+  flex: 1;
+}
+
+.is-mobile .sidenav-container {
+  /* When the sidenav is fixed, don't constrain the height of the sidenav container. This allows the
+     `<body>` to be our scrolling element for mobile layouts. */
+  flex: 1 0 auto;
+}
+
+mat-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+mat-toolbar section {
+  display: flex;
+  align-items: center;
+}
+
+.img-logo {
+  max-width: 8em;
+  margin-left: 1em;
+  float: right;
+  :hover{
+    cursor: pointer;
+  }
+}
+
+.img-cof {
+  max-width: 3em;
+  max-height: 2em;
+  float: right;
+  :hover{
+    cursor: pointer;
+  }
+}
+
+.marcarFondoTemaClaro {
+  background-color: #EBEBEB;
+}
+
+.marcarFondoTemaOscuro {
+  background-color: #515151;
+}
+
+.material-symbols-outlined {
+  margin-right: 0.625em;
+  overflow: visible;
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 700,
+    'GRAD' 0,
+    'opsz' 48
+}
+
+button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+button p {
+  font-size: medium;
+  margin: 0px;
+}
+
+mat-sidenav {
+  margin: 1.2em 0px 1.1em 0px;
+  padding: 0.9375em;
+  width: 20em;
+  border-radius: 0.3125em;
+}
+
+mat-nav-list span {
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep #sideNavContainer {
+  .mat-drawer-backdrop.mat-drawer-shown {
+    background-color: transparent;
+  }
+
+  .mat-drawer-inner-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .mat-mdc-icon-button.mat-mdc-button-base {
+    width: 100%;
+    border-radius: 0.3125em;
+  }
+  .mat-mdc-icon-button .mat-mdc-button-persistent-ripple {
+    border-radius: 0.3125em;
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+  color: unset;
+}
+
+button.ocultar {
+  display: none;
+}
+
+.rotateR {
+  animation: rotate-clockwise 0.4s ease-in-out;
+}
+
+@keyframes rotate-clockwise {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.rotateL {
+  animation: rotate-counterclockwise 0.4s ease-in-out;
+}
+
+@keyframes rotate-counterclockwise {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.mat-mdc-standard-chip {
+  --mdc-chip-elevated-container-color: none;
+}
+
+#expert-mode-chip {
+  font-size: medium;
+}
+
+::ng-deep .mdc-snackbar{
+  text-align: center;
+  // font-weight: bold;
+}
+
+// ::ng-deep .mat-mdc-snack-bar-container {
+//   --mdc-snackbar-supporting-text-font: Roboto, sans-serif;
+//   --mdc-snackbar-supporting-text-line-height: 20px;
+//   --mdc-snackbar-supporting-text-size: 14px;
+//   --mdc-snackbar-supporting-text-weight: 1000;
+// }
+
+
+// Modal Info
+
+.center-content {
+
+  .logo{
+    width: 20%;
+    position: relative;
+    float: right;
+  }
+
+  mat-card-title {
+    display: flex;
+  }
+
+  mat-icon {
+    margin: 0.16em 0.3em 0.5em 0em;
+  }
+
+  mat-progress-bar {
+    margin-bottom: 2em;
+  }
+
+}
+
+.icono #themeButton.material-icons {
+  font-family: 'Material Icons' !important;
+}
+
+button:hover .cambiarConHover {
+  font-family: 'Material Icons' !important;
+}
+
+.material-icons{
+  font-family: 'Material Icons' !important;
+}
+
+.modalInfo{
+  width: 100%;
+}
+
+.copyright-info{
+  width: 22em;
+}
+
+.descripcion-info{
+  textarea{
+    height: 7.5em;
+    width: 100%;
+  }
+}
+
+.nav-nombre{
+  text-align: left;
+}
+
+
+#manual-usuario {
+  text-decoration: none;
+  color: inherit;
+}

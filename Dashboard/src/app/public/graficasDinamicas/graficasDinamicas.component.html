@@ -1,0 +1,23 @@
+<ng-container *ngIf="cargado">
+  <section class="contenedor-graficasEstaticas">
+    <ng-container *ngFor="let grafica of graficas; let i = index;">
+      <section class="contenedor-grafica">
+        <h1 class="titulo">{{ grafica.titulo }}</h1>
+        <mat-card>
+          <img mat-card-image class="grafica" [src]="'data:image/png;base64,' + grafica.imgb64">
+          <form class="example-form">
+            <mat-form-field>
+              <mat-label>Parámetro</mat-label>
+              <input matInput [id]="'inputField' + i" [formControl]="cantidadRegistrosControls[i]">
+              <mat-error *ngIf="cantidadRegistrosControls[i].hasError('pattern')">
+                Ingrese solo dígitos.
+              </mat-error>
+            </mat-form-field>
+
+            <button type="submit" mat-button (click)="pedirDatos(i)" [disabled]="cantidadRegistrosControls[i].hasError('pattern') || booleanServices.getShowProgressBar()">Enviar</button>
+          </form>
+        </mat-card>
+      </section>
+    </ng-container>
+  </section>
+</ng-container>

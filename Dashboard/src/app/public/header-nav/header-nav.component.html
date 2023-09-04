@@ -1,0 +1,121 @@
+<header class="container" [class.is-mobile]="mobileQuery.matches" style="z-index: 4">
+  <mat-toolbar class="toolbar" id="header-toolbar-remove">
+    <section>
+      <button mat-icon-button (click)="snav.toggle();">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <div>
+        <button mat-icon-button (click)="redireccionar()" (auxclick)="redireccionarEnNuevaPestana($event)">
+          <mat-icon>home</mat-icon>
+        </button>
+      </div>
+    </section>
+
+    <app-temporizador></app-temporizador>
+
+    <!-- <section>
+      ToDo cambiar por logo ugr
+      <a href="https://veridata.es/" id="img-veridata">
+        <img class="img-logo" src="./assets/img/logo_veridata.png"/>
+      </a>
+    </section> -->
+  </mat-toolbar>
+  <mat-progress-bar *ngIf="mostrarProgressBar else determinate" mode="indeterminate"></mat-progress-bar>
+  <ng-template #determinate>
+    <mat-progress-bar mode="determinate" value="100"></mat-progress-bar>
+  </ng-template>
+
+  <mat-sidenav-container id="sideNavContainer"  class="sidenav-container"  [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
+    <mat-sidenav id="barralateral" class="mat-elevation-z8" #snav fixedInViewport [fixedTopGap]="56" tabindex="1">
+      <div>
+        <ng-container>
+          <div class="icono"  *ngFor="let nav of fillerNav; let i = index">
+            <button mat-icon-button routerLink="{{nav.url}}"
+                    [ngClass]="{ 'marcarFondoTemaOscuro': nav.selected && tema == 'dark', 'marcarFondoTemaClaro': nav.selected && tema == 'light' }">
+              <mat-icon [ngClass]="{ 'cambiarConHover': nav.icon }" class="material-symbols-outlined material-icons" *ngIf="nav.icon != ''">
+                {{ nav.icon }}
+              </mat-icon><p class="nav-nombre">{{ nav.nombre }}</p>
+            </button>
+          </div>
+        </ng-container>
+        <br>
+        <mat-divider></mat-divider>
+        <br>
+      </div>
+
+      <div></div>
+
+      <div>
+
+
+
+          <!-- <button mat-icon-button routerLink="/admin">
+            <mat-icon class="material-symbols-outlined cambiarConHover">
+              admin_panel_settings
+            </mat-icon><p>Administración</p>
+          </button> -->
+
+
+        <br>
+        <mat-divider></mat-divider>
+        <br>
+
+        <div class="icono">
+          <button mat-icon-button [matMenuTriggerFor]="menu2">
+            <mat-icon class="material-symbols-outlined cambiarConHover">
+              palette
+            </mat-icon><p>Colores</p>
+          </button>
+          <mat-menu #menu2="matMenu" >
+            <button mat-menu-item (click)="onSetColor('Pink')"><mat-icon style="color: #E91E63;">format_color_fill</mat-icon>Rosa</button>
+            <button mat-menu-item (click)="onSetColor('Purple')"><mat-icon style="color: #9C27B0;">format_color_fill</mat-icon>Morado</button>
+            <button mat-menu-item (click)="onSetColor('Indigo')"><mat-icon style="color: #3F51B5;">format_color_fill</mat-icon>Añil</button>
+            <button mat-menu-item (click)="onSetColor('Cyan')"><mat-icon style="color: #008CD6;">format_color_fill</mat-icon>Azul</button>
+            <button mat-menu-item (click)="onSetColor('Teal')"><mat-icon style="color: #009688;">format_color_fill</mat-icon>Verde azulado</button>
+            <button mat-menu-item (click)="onSetColor('Green')"><mat-icon style="color: #4CAF50;">format_color_fill</mat-icon>Verde</button>
+            <button mat-menu-item (click)="onSetColor('Orange')"><mat-icon style="color: #FF9800;">format_color_fill</mat-icon>Naranja</button>
+          </mat-menu>
+        </div>
+
+        <div class="icono">
+          <button mat-icon-button (click)="onSetTheme()">
+            <mat-icon id="themeButton" class="material-symbols-outlined cambiarConHover">
+              {{ iconoTema }}
+            </mat-icon><p>{{ textoTema }}</p>
+          </button>
+        </div>
+
+          <br>
+          <mat-divider></mat-divider>
+          <br>
+
+          <a id="manual-usuario" href="./assets/docs/memoria-TFG.pdf" target="_blank" class="icono">
+            <button mat-icon-button>
+              <mat-icon class="material-symbols-outlined">
+                picture_as_pdf
+              </mat-icon><p>Memoria TFG</p>
+            </button>
+          </a>
+
+          <div class="icono">
+            <button mat-icon-button (click)="abrirInfo()">
+              <mat-icon class="material-symbols-outlined cambiarConHover">
+                info
+              </mat-icon><p>Info</p>
+            </button>
+          </div>
+
+      </div>
+    </mat-sidenav>
+
+    <mat-sidenav-content>
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+
+  </mat-sidenav-container>
+</header>
+
+
+
+

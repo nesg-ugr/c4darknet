@@ -1,0 +1,105 @@
+@media (max-width: 1500px){
+  ::ng-deep  #paginator .mat-mdc-paginator-range-actions {
+    margin-right: 4.5em;
+  }
+}
+
+.no-hover:hover {
+  cursor: default;
+}
+
+th.primary-color {
+  background-color: var(--color-primario);
+}
+
+.noneDisplayTable {
+  display: none;
+}
+
+.tabla-contenedor {
+  max-width: 90vw;
+  overflow-x: auto;
+}
+
+.primary-color {
+  background-color: var(--color-primario);
+  position: sticky;
+  text-align: center;
+  z-index: 1;
+  padding: 0 0.8em;
+}
+
+//para hacer sticky la primera fila de th
+// .primary-color.row-header {
+//   top: 0; /* Fijar arriba  */
+// }
+
+.primary-color.column-header {
+  left: 0; /* Fijar a la izq */
+  padding: 0.6em;
+  z-index: 2;
+  width: 1em;
+  cursor: pointer;
+}
+
+::ng-deep .encabezado-tabla .mat-sort-header-content {
+  text-align: center;
+  white-space: normal;
+}
+
+::ng-deep .mat-sort-header-container{
+  display: flex;
+  justify-content: center;
+}
+
+.mdc-data-table__cell {
+  text-align: center !important;
+  padding: 0 0.8em;
+}
+
+.long-header {
+  white-space: nowrap; /* Evita el salto de línea */
+  overflow: hidden; /* Oculta el texto desbordado */
+  text-overflow: ellipsis; /* Muestra puntos suspensivos (...) cuando el texto se desborda */
+}
+
+td p, th p {
+  white-space: normal;
+  position: relative;
+  top: 0.5em;
+  max-width: 34.2em;
+  word-wrap: break-word;
+}
+
+.contenedor-tabla{
+  margin: 2em auto 3em;
+  width: fit-content;
+
+  max-width: 96vw;
+  overflow-x: scroll;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.contenedor-cabecera-tabla{
+  display: flex;
+  justify-content: space-between;
+  mat-form-field{
+    width: 18em;
+  }
+}
+
+.left-align {
+  text-align: left !important;
+}
+
+#refrescarTabla{
+  position: absolute;
+  width: fit-content !important;
+  top: 2.84em;
+}
+::ng-deep #refrescarTabla span.mat-mdc-button-persistent-ripple.mdc-icon-button__ripple {
+  border-radius: 100% !important;
+}

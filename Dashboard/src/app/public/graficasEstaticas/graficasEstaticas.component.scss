@@ -1,0 +1,41 @@
+img.grafica{
+  aspect-ratio: 3/2;
+  object-fit: contain;
+  padding: 2em;
+  max-width: 45vw;
+}
+
+.titulo{
+  text-align: center;
+}
+
+mat-card{
+  // align-items: center;
+  width: fit-content;
+}
+
+.contenedor-graficasEstaticas{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+}
+
+.contenedor-grafica{
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1em;
+}
+
+
+@media (max-width: 800px) {
+  .contenedor-graficasEstaticas{
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: 1em;
+  }
+
+  img.grafica{
+    max-width: 100%;
+  }
+}
