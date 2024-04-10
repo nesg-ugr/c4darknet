@@ -28,7 +28,7 @@ stop() {
   	
   		echo "######### VM $vm ############"
 		echo "[+] Crawling status on $vm ..."
-  		ssh $vm "cd $script_path; tail -n 500 ~/datos/c4darknet/logs/darknetcrawler.log | grep ONGOING"
+  		ssh $vm "cd $script_path; tail -n 500 ~/datos/c4darknet/logs/darknetcrawler.log | grep ONGOING | tail -n 1"
   		echo " "
   		echo "---- VM $vm -----"
   		echo " "

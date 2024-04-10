@@ -27,8 +27,8 @@ HTTP_TIMEOUT = 180  # Seconds
 # Initial seed file
 INITIAL_SEEDS = "freenet_seeds.txt"
 # Batch size of initial seeds
-INITIAL_SEEDS_BACH_SIZE = 2200  # 1100/5=2200
+INITIAL_SEEDS_BACH_SIZE = 5498 # 10996/2=5498
 # Time to wait until the next seeds self-assignment
-SEEDS_ASSIGNMENT_PERIOD = 600  # seconds (5 machines, 2 minute/machine --> 10 minutes )
+SEEDS_ASSIGNMENT_PERIOD = 240  # seconds (2 machines, 2 minute/machine --> 2 minutes )
 # To schedule the discovering time. Each site will be discover every TIME_INTERVAL_TO_DISCOVER
 TIME_INTERVAL_TO_DISCOVER = 30  # minutes

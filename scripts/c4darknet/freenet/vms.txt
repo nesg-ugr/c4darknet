@@ -1,1 +1,1 @@
-c4darknet10 c4darknet12 c4darknet121 c4darknet122 c4darknet123 c4darknet124
+c4darknet10 c4darknet12 c4darknet121

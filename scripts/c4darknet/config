@@ -1,0 +1,98 @@
+Host lupo
+	HostName lupo.ugr.es
+	User roberto
+
+Host vps
+        HostName 54.39.97.235
+        User rmagan
+        Port 2345
+
+Host metis
+        HostName metis.ugr.es
+        User rmagan
+        Port 22
+
+#BBDD
+Host c4darknet10
+        HostName localhost
+        User administrador
+        Port 2210
+#VM I2P ---------------------------------
+Host c4darknet11
+	HostName localhost
+        User administrador
+        Port 2211
+       
+Host c4darknet111
+	HostName localhost
+        User administrador
+        Port 22111
+
+Host c4darknet112
+	HostName localhost
+        User administrador
+        Port 22112
+
+Host c4darknet113
+	HostName localhost
+        User administrador
+        Port 22113
+        
+Host c4darknet114
+	HostName localhost
+        User administrador
+        Port 22114
+
+# VM FREENET -------------------------------
+Host c4darknet12
+        HostName localhost
+        User administrador
+        Port 2212
+
+Host c4darknet121
+        HostName localhost
+        User administrador
+        Port 22121
+
+Host c4darknet122
+        HostName localhost
+        User administrador
+        Port 22122
+
+Host c4darknet123
+        HostName localhost
+        User administrador
+        Port 22123
+
+Host c4darknet124
+        HostName localhost
+        User administrador
+        Port 22124
+
+#VM TOR -------------------------------------
+Host c4darknet13
+        HostName localhost
+        User administrador
+        Port 2213
+        
+Host c4darknet131
+        HostName localhost
+        User administrador
+        Port 22131
+        
+Host c4darknet132
+        HostName localhost
+        User administrador
+        Port 22132
+        
+Host c4darknet133
+        HostName localhost
+        User administrador
+        Port 22133
+        
+Host c4darknet134
+        HostName localhost
+        User administrador
+        Port 22134
+
+
